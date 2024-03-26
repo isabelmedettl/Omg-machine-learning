@@ -10,8 +10,8 @@
 #include "Entity.h"
 #include "MapGenerator.h"
 #include "GameObjectGenerator.h"
-#include "JosPickup.h"
-#include "JosPlayer.h"
+#include "GCrocodile.h"
+#include "GTurtle.h"
 
 
 using namespace mojosabel;
@@ -21,40 +21,37 @@ Canvas* UI;
 
 void nextLevelFunc()
 {
-    ses.getWorld()->newLevel("images/DesertTile32p.png", "images/DesertTileWithRock.png");
+    ses.getWorld()->newLevel("images/WaterTile.png", "images/WaterTileWithLilyPad.png");
 };
 
-void pickupsForNextLevel()
+void enemiesToNextLevel()
 {
-    int newCrystalsRequired = ses.getWorld()->getCurrentLevelIndex() + 3;
-    generateGameObjects<JosPickup>(ses.getWorld()->getCurrentLevel(), newCrystalsRequired, "images/Crystals32p.png", true);
-    static_cast<JosPlayer*>(ses.findEntity("Player"))->setCrystalsRequired(newCrystalsRequired);
+    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), (ses.getWorld()->getCurrentLevelIndex() * 4) + 5, "images/Crocodile.png", true);
 }
 
 int main(int argc, char* argv[]) 
 {
 
-// add code to remove potential bitmaps 
     std::cout << "***main***" << std::endl;
 
     UI = ses.getRootCanvas();
-    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -300), 0, 600, 100, "OMG DESERT DIGGER ONE MILLION"));
-    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), SCREEN_HEIGHT-100, 400, 100, "MINE ALL MINERALS"));
+    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), 0, 400, 100, "WOW SEA ADVENTURE 4000"));
+    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), SCREEN_HEIGHT-100, 400, 100, "KILL ALL CROCODILES"));
 
-    ses.createNewWorld(1, 50, 5, 4);
-    ses.getWorld()->newLevel("images/DesertTile32p.png", "images/DesertTileWithRock.png");
+    ses.createNewWorld(2, 48, 5, 4);
+    ses.getWorld()->newLevel("images/WaterTile.png", "images/WaterTileWithLilyPad.png");
 
     Vector2 spawnPos = ses.getWorld()->getCurrentLevel()->generateSpawnPosition();
     int spawnX = spawnPos.x;
     int spawnY = spawnPos.y;
-    JosPlayer* player = new JosPlayer(spawnX, spawnY);
+    GTurtle* player = new GTurtle(spawnX, spawnY, 100);
+    player->loadTexture(constants::gResPath + "images/Turtle.png");
     ses.add(player);
 
-    generateGameObjects<JosPickup>(ses.getWorld()->getCurrentLevel(), 3, "images/Crystals32p.png", true );
-    player->setCrystalsRequired(3);
+    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), 5, "images/Crocodile.png", true );
 
     ses.addLoadLevelFunc(nextLevelFunc);
-    ses.addLoadLevelFunc(pickupsForNextLevel);
+    ses.addLoadLevelFunc(enemiesToNextLevel);
     
     ses.run();
 

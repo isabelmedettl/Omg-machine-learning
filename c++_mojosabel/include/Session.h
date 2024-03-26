@@ -29,13 +29,6 @@ namespace mojosabel {
         void capFrameRate(long *renderTime, float *remainder);
         void sortEntitiesByLayer();
 
-
-        /* === Saving and creating files */
-        void saveRenderedImage();
-        void compareSurfaces();
-
-        int saveRenderedImageCap = 100;
-
     public:
         Session();
         Session(const Session* other) = delete;

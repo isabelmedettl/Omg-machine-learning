@@ -8,7 +8,7 @@ namespace mojosabel {
     
     World::World(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
     {
-        mapGenerator = new BitwiseMapGenerator(smoothMap, fillPercent, smoothWalkableLimit, smoothUnwalkableLimit);
+        mapGenerator = new MapGenerator(smoothMap, fillPercent, smoothWalkableLimit, smoothUnwalkableLimit);
     }
 
     void World::newLevel(std::string walkableTexturePath, std::string unwalkableTexturePath)
@@ -24,7 +24,7 @@ namespace mojosabel {
         }
         Level* level = new Level(walkableTexturePath, unwalkableTexturePath); 
         levels.push_back(level);
-        mapGenerator->generateBitMap();
+        mapGenerator->genereateIntMap();
         mapGenerator->mixMap(level);
         if (Entity* player = ses.findEntity("Player"))
         {
