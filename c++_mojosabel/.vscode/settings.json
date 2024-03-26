@@ -46,14 +46,6 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp",
-        "optional": "cpp"
-    },
-    "makefile.launchConfigurations": [
-        {
-            "cwd": "c:\\Users\\mijo1919\\Documents\\MOJOSABEL\\c++_mojosabel\\build\\debug",
-            "binaryPath": "c:\\Users\\mijo1919\\Documents\\MOJOSABEL\\c++_mojosabel\\build\\debug\\play",
-            "binaryArgs": []
-        }
-    ]
+        "typeinfo": "cpp"
+    }
 }
