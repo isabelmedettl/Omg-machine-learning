@@ -7,7 +7,17 @@
 
 namespace mojosabel {
 
-    
+    void Session::saveRenderedImage()
+    {
+        std::cout << "printy" << std::endl;
+
+    }
+
+    void Session::compareSurfaces()
+    {
+        std::cout << "compary" << std::endl;
+    }
+
     Session::Session()
     {
         std::cout << "Hej det funkar, session" << std::endl;
@@ -176,6 +186,7 @@ namespace mojosabel {
         renderTime = SDL_GetTicks();
         remainder = 0;
         bool quit = false;
+        int saveImageCounter = 0;
         while(!quit)
         {
             SDL_Event event;
@@ -252,6 +263,13 @@ namespace mojosabel {
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
 
+            if (saveImageCounter <= saveRenderedImageCap)
+            {
+                saveRenderedImage();
+                saveImageCounter++;
+
+            }
+
             if(loadNextLevel)
             {
                 for(loadLevelFunc f : funcsOnLoadLevel)
@@ -260,6 +278,8 @@ namespace mojosabel {
                 }
                 loadNextLevel = false;
             }
+
+            
         }
     }
 
@@ -302,4 +322,7 @@ namespace mojosabel {
     }
 
     Session ses;
+
 }
+
+
