@@ -1,29 +1,97 @@
 #include <iostream>
 #include <algorithm>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_surface.h>
 #include "Session.h"
 #include "System.h"
 #include "Collision.h"
 
 namespace mojosabel {
-
-    void Session::saveRenderedImage()
-    {
-        std::cout << "printy" << std::endl;
-
-    }
-
-    void Session::compareSurfaces()
-    {
-        std::cout << "compary" << std::endl;
-    }
-
+   
     Session::Session()
     {
         std::cout << "Hej det funkar, session" << std::endl;
         rootCanvas = new Canvas();
-        //world = new World();
     }
+
+    void Session::saveRenderedImage()
+    {
+        if (sys.getWin() == nullptr)
+        {
+            return;
+        }
+
+        if (window == nullptr)
+        {
+            window = sys.getWin();
+        }
+
+        SDL_Surface* currentWindowSurface = SDL_GetWindowSurface(window); 
+        if (currentWindowSurface == nullptr)
+        {
+            return;
+        }
+       
+        if (compareToCachedSurface(currentWindowSurface) == false)
+        {
+            return;
+        }
+
+        if (sys.saveFolderExists() == false)
+        {
+            return;
+        }
+       
+        savedFileCount++;
+        std::string saveString =  constants::saveFileName + std::to_string(savedFileCount) + ".bpm";
+        const int length = saveString.length(); 
+  
+        char* char_array = new char[length + 1]; 
+  
+        strcpy(char_array, saveString.c_str()); 
+        if (SDL_SaveBMP(currentWindowSurface, char_array) != 0)
+        {
+            SDL_Log("Couldn´t save bitmap noooo :( %s\n)", SDL_GetError());
+        }
+        cachedSurface = currentWindowSurface;
+        SDL_FreeSurface(currentWindowSurface);
+    }
+
+    int Session::compareToCachedSurface(SDL_Surface* const surface)
+    {
+        if (cachedSurface == nullptr)
+        {
+            return false;
+        }
+
+        if (surface->w != cachedSurface->w || surface->h != cachedSurface->h) 
+        {
+            // Surfaces are of different sizes, cannot compare
+            return false;
+        }
+
+        SDL_LockSurface(surface);
+        SDL_LockSurface(cachedSurface);
+
+        int numPixels = surface->w * surface->h;
+        for (int i = 0; i < numPixels; i++) 
+        {
+            Uint32* pixels1 = (Uint32*)surface->pixels;
+            Uint32* pixels2 = (Uint32*)cachedSurface->pixels;
+
+            if (pixels1[i] != pixels2[i]) 
+            {
+                SDL_UnlockSurface(surface);
+                SDL_UnlockSurface(cachedSurface);
+                return true; // Found a difference
+            }
+        }
+
+        SDL_UnlockSurface(surface);
+        SDL_UnlockSurface(cachedSurface);
+        return false; // No differences found
+    }
+
 
     void Session::add(Entity* entityToAdd)
     {
@@ -187,6 +255,7 @@ namespace mojosabel {
         remainder = 0;
         bool quit = false;
         int saveImageCounter = 0;
+
         while(!quit)
         {
             SDL_Event event;
@@ -265,7 +334,7 @@ namespace mojosabel {
 
             if (saveImageCounter <= saveRenderedImageCap)
             {
-                saveRenderedImage();
+                //saveRenderedImage();
                 saveImageCounter++;
 
             }
@@ -317,6 +386,7 @@ namespace mojosabel {
     {
         clearEntities();
         funcsOnLoadLevel.clear();
+       // SDL_FreeSurface(cachedSurface);
         delete world;
         delete rootCanvas;
     }

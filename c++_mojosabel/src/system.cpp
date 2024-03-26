@@ -1,7 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
-
+#include <sys/stat.h>
+#include <windows.h>
 #include "System.h"
 
 namespace mojosabel {
@@ -17,6 +18,8 @@ namespace mojosabel {
         font = TTF_OpenFont((constants::gResPath + "fonts/arial.ttf").c_str(), 36);
         std::cout << "resPath: " << constants::gResPath << std::endl;
         //keyboard[MAX_KEYBOARD_KEYS] = {0};
+        ensureFolderExists();
+
     }
 
     System::~System()
@@ -51,6 +54,46 @@ namespace mojosabel {
         }
         return false;
     }
-    
+
+    int System::saveFolderExists_internal()
+    {
+        struct stat info;
+        if (stat(constants::gSaveImagePath.c_str(), &info) != 0)
+        {
+            bSaveFolderExists = 0;
+            return 0; // Cannot access
+        }
+        else if (info.st_mode & S_IFDIR)
+        {
+            bSaveFolderExists = 1;
+            return 1; // It's a directory
+        }  
+        else
+        {
+            bSaveFolderExists = 0;
+            return 0; // Not a directory
+        }
+    }
+
+    int System::saveFolderExists()
+    {
+        return bSaveFolderExists;
+    }
+
+    void System::ensureFolderExists()
+    {
+        const char* pathToFolder = constants::gSaveImagePath.c_str();
+
+        if (GetFileAttributesA(pathToFolder) == INVALID_FILE_ATTRIBUTES)
+        {
+            CreateDirectoryA(pathToFolder, NULL);
+        }
+
+        if (saveFolderExists_internal() == false)
+        {
+            SDL_Log("Folder does not exist, and wasn´t able to create one </333: %s", pathToFolder);
+        }
+    }
+  
     System sys;    
 }

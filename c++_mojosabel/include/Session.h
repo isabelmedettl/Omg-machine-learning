@@ -7,6 +7,8 @@
 #include "Canvas.h"
 #include "Entity.h"
 
+
+class System;
 namespace mojosabel {
 
     class Session
@@ -15,6 +17,7 @@ namespace mojosabel {
         World* world;
         long renderTime; //tiden det tog för förra framen att rendera
         float remainder; 
+        SDL_Window* window = nullptr;
         bool loadNextLevel = false;
         Canvas *rootCanvas;
         std::vector<Entity*> entities, addedEntities, removedEntities;
@@ -29,12 +32,10 @@ namespace mojosabel {
         void capFrameRate(long *renderTime, float *remainder);
         void sortEntitiesByLayer();
 
-
-        /* === Saving and creating files */
-        void saveRenderedImage();
-        void compareSurfaces();
-
         int saveRenderedImageCap = 100;
+        int savedFileCount = 0;
+
+        SDL_Surface* cachedSurface = nullptr;
 
     public:
         Session();
@@ -52,6 +53,11 @@ namespace mojosabel {
         ~Session();
         Canvas* getRootCanvas() {return rootCanvas;};
         Entity* findEntity(std::string name);
+
+    private:
+         /* === Saving and creating files */
+        int compareToCachedSurface(SDL_Surface* const surface);
+        void saveRenderedImage();
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med

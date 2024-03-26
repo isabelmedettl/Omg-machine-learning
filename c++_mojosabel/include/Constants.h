@@ -13,8 +13,13 @@ namespace constants
     #define MAP_WIDTH 40
     #define MAP_HEIGHT 22
 
+
     //gResPath-contains the relative path to your resources.
 	const std::string gResPath = "resources/";
+
+    //saving bpm and images
+	const std::string gSaveImagePath = "saved_images/";
+    const std::string saveFileName = "screenshot_";
 
     //keyboard keys enums
     #define KEY_A 4
