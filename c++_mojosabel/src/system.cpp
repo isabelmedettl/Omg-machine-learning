@@ -1,11 +1,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
+#include <filesystem>
 #include <sys/stat.h>
 #include <windows.h>
 #include "System.h"
 
 namespace mojosabel {
+
+    namespace fs = std::filesystem;
 
     System::System()
     {
@@ -92,6 +95,36 @@ namespace mojosabel {
         if (saveFolderExists_internal() == false)
         {
             SDL_Log("Folder does not exist, and wasn´t able to create one </333: %s", pathToFolder);
+        }
+    }
+
+    void System::cleanDirectory()
+    {
+        cleanDirectory_internal();
+    }
+
+    void System::cleanDirectory_internal()
+    {
+        const char* pathToFolder = constants::gSaveImagePath.c_str();
+        try 
+        {
+        // Check if the path exists and is a directory
+            if (fs::exists(pathToFolder) && fs::is_directory(pathToFolder)) 
+            {
+                // Iterate through each item in the directory, check current entry and remove if found
+                for (const auto& entry : fs::directory_iterator(pathToFolder)) 
+                {
+                    if (fs::is_regular_file(entry)) 
+                    {
+                        //fs::remove(entry.path());
+                       std::cout << "remove everything in folder  " << constants::gSaveImagePath << std::endl;
+                    }
+                }
+            }
+        } 
+        catch (const fs::filesystem_error& e) 
+        {
+            std::cerr << "Error cleaning directory: " << e.what() << '\n';
         }
     }
   

@@ -18,41 +18,48 @@ namespace mojosabel {
     {
         if (sys.getWin() == nullptr)
         {
+            std::cout << "Error: no window" << std::endl;
             return;
         }
 
         if (window == nullptr)
         {
+            std::cout << "window pointer set" << std::endl;
             window = sys.getWin();
         }
 
         SDL_Surface* currentWindowSurface = SDL_GetWindowSurface(window); 
         if (currentWindowSurface == nullptr)
         {
+            std::cout << "Error: couldn´t get surface from window" << std::endl;
             return;
         }
        
         if (compareToCachedSurface(currentWindowSurface) == false)
         {
+            std::cout << "No need to save image, nothing changed" << std::endl;
             return;
         }
 
         if (sys.saveFolderExists() == false)
         {
+            std::cout << "no save folder, cant save" << std::endl;
             return;
         }
        
         savedFileCount++;
-        std::string saveString =  constants::saveFileName + std::to_string(savedFileCount) + ".bpm";
+        std::string saveString =  constants::saveFileName + std::to_string(savedFileCount) + ".bmp";
         const int length = saveString.length(); 
-  
         char* char_array = new char[length + 1]; 
-  
         strcpy(char_array, saveString.c_str()); 
+        
+
         if (SDL_SaveBMP(currentWindowSurface, char_array) != 0)
         {
             SDL_Log("Couldn´t save bitmap noooo :( %s\n)", SDL_GetError());
+            std::cout << "Couldn´t save bitmap noooo :( %s\n)" << std::endl;
         }
+
         cachedSurface = currentWindowSurface;
         SDL_FreeSurface(currentWindowSurface);
     }
@@ -61,12 +68,15 @@ namespace mojosabel {
     {
         if (cachedSurface == nullptr)
         {
-            return false;
+            //no cached surface means it´s the first frame, this should be saved by default
+            std::cout << "no cached surface" << std::endl;
+            return true;
         }
 
         if (surface->w != cachedSurface->w || surface->h != cachedSurface->h) 
         {
             // Surfaces are of different sizes, cannot compare
+            std::cout << "different sizes" << std::endl;
             return false;
         }
 
@@ -89,7 +99,8 @@ namespace mojosabel {
 
         SDL_UnlockSurface(surface);
         SDL_UnlockSurface(cachedSurface);
-        return false; // No differences found
+        std::cout << "no diff found" << std::endl;
+        return true; // No differences found
     }
 
 
@@ -336,7 +347,6 @@ namespace mojosabel {
             {
                 //saveRenderedImage();
                 saveImageCounter++;
-
             }
 
             if(loadNextLevel)
@@ -346,9 +356,7 @@ namespace mojosabel {
                     f();
                 }
                 loadNextLevel = false;
-            }
-
-            
+            } 
         }
     }
 

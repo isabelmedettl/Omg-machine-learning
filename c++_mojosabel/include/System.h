@@ -26,11 +26,12 @@ namespace mojosabel
         int keyboard[MAX_KEYBOARD_KEYS] = {0};
         bool isOutOfBounds(int x, int y);
         int saveFolderExists();
+        void cleanDirectory();
 
     private:
         void ensureFolderExists();
         int saveFolderExists_internal();
-
+        void cleanDirectory_internal();
     };
 
     extern System sys;
