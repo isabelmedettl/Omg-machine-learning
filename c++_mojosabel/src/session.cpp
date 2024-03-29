@@ -118,7 +118,11 @@ namespace mojosabel {
     {
         if (event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
-            sys.keyboard[event->keysym.scancode] = 0;
+            if (sys.keyboard[event->keysym.scancode] != 0)
+            {
+                sys.keyboard[event->keysym.scancode] = 0;
+            }
+            //sys.keyboard[event->keysym.scancode] = 0;
         }
     }
 
@@ -126,7 +130,16 @@ namespace mojosabel {
     {
         if (/*event->repeat == 0 && */ event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
-            sys.keyboard[event->keysym.scancode] = 1;
+            if (sys.keyboard[event->keysym.scancode] != 1)
+            {
+                sys.keyboard[event->keysym.scancode] = 1;
+
+                if (event->keysym.scancode == KEY_SPACE)
+                {
+                    
+                }
+            }
+            //sys.keyboard[event->keysym.scancode] = 1;
         }
     }
 

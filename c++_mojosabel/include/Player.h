@@ -9,6 +9,8 @@ namespace mojosabel {
     {
     protected:
         int health;
+        int shootCoolDown = 6;
+        int shootCounter = 0;
     public:
         Player() = delete;
         Player(int x, int y, int w, int h, int layer, int speed);

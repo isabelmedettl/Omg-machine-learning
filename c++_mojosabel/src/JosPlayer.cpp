@@ -2,7 +2,7 @@
 #include "JosDiggingBullet.h"
 #include "Constants.h"
 
-JosPlayer::JosPlayer(int x, int y) : Player(x, y, 32, 32, 3, 4) {
+JosPlayer::JosPlayer(int x, int y) : Player(x, y, 29, 29, 3, 4) {
     setCollision(true);
     loadTexture(constants::gResPath + "images/DesertDigger32p.png");
 }

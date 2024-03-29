@@ -39,9 +39,9 @@ int main(int argc, char* argv[])
 
     UI = ses.getRootCanvas();
     //UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -300), 0, 600, 100, "OMG DESERT DIGGER ONE MILLION"));
-    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -300), 0, 600, 100, "1"));
+    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -300), 0, 40, 40, "1"));
 
-    //UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), SCREEN_HEIGHT-100, 400, 100, "MINE ALL MINERALS"));
+    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), SCREEN_HEIGHT-100, 400, 100, "MINE ALL MINERALS"));
 
     ses.createNewWorld(1, 50, 5, 4);
     ses.getWorld()->newLevel("images/DesertTile32p.png", "images/DesertTileWithRock.png");
