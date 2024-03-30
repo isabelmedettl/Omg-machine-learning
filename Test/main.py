@@ -14,6 +14,8 @@ import pygetwindow as gw
 import subprocess
 import psutil
 from collections import deque
+import random
+import pydirectinput as pdi
 
 user32 = ctypes.windll.user32
 screen_wc = int(user32.GetSystemMetrics(0)/2)
@@ -54,11 +56,11 @@ def process_and_stack_frames(output_filename_stacks, output_filename_screenshot,
 
 # Start the game or application and get the process id
 
-game_path = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 os.startfile(game_path)
 time.sleep(1)
 
-window_title = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with the actual title of your game window
+window_title = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\debug\\play.exe"  # Replace this with the actual title of your game window
 other_window_title = "Mojosabel"
 
 print("Starting screenshot capture. The loop will abort when the program stops running.")
@@ -66,6 +68,17 @@ print("Starting screenshot capture. The loop will abort when the program stops r
 # Function to check if a process is still running
 def is_process_running(pid):
     return psutil.pid_exists(pid)
+
+actions = [["w"], ["a"], ["s"], ["d"], ["space"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"], ["w", "space"], ["a", "space"], ["s", "space"], ["d", "space"], ["w", "a", "space"], ["w", "d", "space"], ["s", "a", "space"], ["s", "d", "space"],]  # define possible actions, is currently missing diagonal moves and None prob doesn't work as no input
+
+def random_action(delay):
+    action = random.choice(actions)
+
+    for x in action:
+        pdi.keyDown(x)
+    time.sleep(delay)
+    for y in action:
+        pdi.keyUp(y)
 
 
 # Infinite loop to continuously capture and overwrite screenshots
@@ -83,9 +96,12 @@ try:
             # Process the screenshot and save
             process_and_stack_frames("stacked_frames", filename)
 
-            time.sleep(0.5)  # Adjust the sleep time as needed
+            random_action(0.125)  # Adjust the sleep time as needed
 
     print(np.load("stacked_frames.npy"))
 except KeyboardInterrupt:
     print("Program terminated by user.")
+
+def is_process_running(pid):
+    return psutil.pid_exists(pid)
 
