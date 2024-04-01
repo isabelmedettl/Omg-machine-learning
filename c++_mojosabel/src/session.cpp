@@ -267,6 +267,36 @@ namespace mojosabel {
         return true;
     }
 
+    void Session::updateCurrentProgressionInfo()
+    {
+        if (world == nullptr)
+        {
+            return;
+        }
+        currentProgressionMaxValue = world->getCurrentLevelIndex() + PROGRESSION_INCREMENT;
+        currentLevel = world->getCurrentLevelIndex();
+    }
+
+    void Session::renderSliders(SDL_Renderer* renderer)
+    {
+        /*
+        int sliderWidth = 20;
+        int screenHeight = constants::SCREEN_HEIGHT;
+        int pickupsSliderHeight = (screenHeight * pickupsRemaining) / constants::MAX_PICKUPS_PER_LEVEL;
+        int levelsSliderHeight = (screenHeight * currentLevel) / constants::MAX_LEVELS;
+
+        // Draw pickups slider right side
+        SDL_Rect pickupsSliderRect = {constants::SCREEN_WIDTH - sliderWidth, screenHeight - pickupsSliderHeight, sliderWidth, pickupsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color
+        SDL_RenderFillRect(renderer, &pickupsSliderRect);
+
+        // Draw levels slider left side
+        SDL_Rect levelsSliderRect = {0, screenHeight - levelsSliderHeight, SLIDER_WIDTH, levelsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color
+        SDL_RenderFillRect(renderer, &levelsSliderRect);
+        */
+    }
+
     void Session::createNewWorld(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
     {
         world = new World(smoothMap, fillPercent, smoothUnwalkableLimit, smoothUnwalkableLimit);

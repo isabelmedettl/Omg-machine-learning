@@ -12,6 +12,8 @@ namespace constants
     #define TILE_SIZE 32
     #define MAP_WIDTH 40
     #define MAP_HEIGHT 22
+    #define PROGRESSION_INCREMENT 3
+    #define SLIDER_WIDTH 20
 
 
     //gResPath-contains the relative path to your resources.

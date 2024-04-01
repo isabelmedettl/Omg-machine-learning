@@ -35,6 +35,9 @@ namespace mojosabel {
         int saveRenderedImageCap = 100;
         int savedFileCount = 0;
 
+        int currentLevel = 0;
+        int currentProgressionMaxValue = 0;
+
         SDL_Surface* cachedSurface = nullptr;
 
     public:
@@ -48,11 +51,17 @@ namespace mojosabel {
         void clearEntities();
         void clearEntitiesExcept(std::string tag);
         void setLoadNextLevel(bool toSet) { loadNextLevel = toSet; }
-        void addLoadLevelFunc(loadLevelFunc funcToAdd) { funcsOnLoadLevel.push_back(funcToAdd); }
+        void addLoadLevelFunc(loadLevelFunc funcToAdd) 
+        { 
+            funcsOnLoadLevel.push_back(funcToAdd); 
+            updateCurrentProgressionInfo();
+        }
+        void updateCurrentProgressionInfo();
         World* getWorld() { return world; }
         ~Session();
         Canvas* getRootCanvas() {return rootCanvas;};
         Entity* findEntity(std::string name);
+        void renderSliders(SDL_Renderer* renderer);
 
     private:
          /* === Saving and creating files */
