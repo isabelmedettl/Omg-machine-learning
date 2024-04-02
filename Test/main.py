@@ -3,20 +3,19 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import os
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
 import pyautogui
 import cv2
 import time
 import ctypes
-import keyboard  # You might need to install this package using pip
 import pygetwindow as gw
-import subprocess
 import psutil
 from collections import deque
 import random
 import pydirectinput as pdi
-import array
+import matplotlib.pyplot as plt
+import keyboard
 
 user32 = ctypes.windll.user32
 screen_wc = int(user32.GetSystemMetrics(0) / 2)
@@ -40,17 +39,58 @@ screenshot_boundaries = (int(screen_wc - game_w/2), int(screen_hc - game_h/2), g
 
 WINDOW_LENGTH = 4  # Number of frames to stack
 frame_queue = deque(maxlen=WINDOW_LENGTH)  # Queue to hold the last N frames
+
+
 cached_distances_to_targets = []
+distances_to_targets = []
 
 
-   # Function to capture and process the screenshot
+pick_up_locations = []
+ds = (0, 0)
+
+# gray constants
+agent_gray = range(80, 120)
+pick_up_target_gray = 200.0 / 255.0
+
+
+score = 0
+
+
+#range
+blue_min = 0.854
+blue_max = 0.89
+agent_min = 0.31
+agent_max = 0.471
+
+
 def  process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
     # Capture the screenshot
     image = pyautogui.screenshot(region=screenshot_boundaries)
-    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+    # Create a mask for the blue channel with a threshold
+    ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
+
+    # Prepare a 3-channel mask for bitwise operations
+    mask3 = np.zeros_like(image)
+    mask3[:, :, 0] = mask  # Apply mask to the blue channel
+
+    # Extract the blue region using bitwise_and
+    blue_region = cv2.bitwise_and(image, mask3)
+
+    # Convert the original image to grayscale and then back to BGR
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+
+    # Extract the non-blue region from the grayscale image
+    non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
+
+    # Combine the blue and grayscale regions
+    combined_image = blue_region + non_blue_region
 
     # Convert to PIL Image to use the resize and convert functions
-    image = Image.fromarray(image)
+    image = Image.fromarray(combined_image)
 
     # Resize and convert to grayscale
     image = image.resize(input_shape)
@@ -61,16 +101,6 @@ def  process_and_stack_frames(output_filename_stacks, output_filename_screenshot
 
     processed_image_normalized = np.array(image) / 255.0
 
-    pick_up_target_gray = 200.0/255.0
-    pick_up_locations = find_pixels_by_color_vectorized(processed_image_normalized, pick_up_target_gray)
-
-    agent_gray = range(80, 120)
-    agent_location = find_player_by_color_range(processed_image_normalized, agent_gray)
-
-    if agent_location is not None:
-        update_distances_to_targets(pick_up_locations, agent_location[0])
-
-
     # Add the processed frame to the queue
     frame_queue.append(processed_image_normalized)
 
@@ -79,6 +109,7 @@ def  process_and_stack_frames(output_filename_stacks, output_filename_screenshot
         stacked_frames = np.stack(frame_queue, axis=-1)
         np.save(output_filename_stacks, stacked_frames)
 
+    return processed_image_normalized
 # Start the game or application and get the process id
 
 
@@ -112,53 +143,90 @@ def random_action(delay):
     for y in action:
         pdi.keyUp(y)
 
+    return action
+
 
 def calculate_distance(point1, point2):
     return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
 
 
-def update_distances_to_targets(pick_up_locations, agent_location):
+def debug_visualization_image(processed_image, it_counter):
+    """
+    Saves the debug visualization as an image.
+
+    :param agent_location: The detected location of the agent in the image.
+    :param pick_up_locations: List of detected pickup locations in the image.
+    :param processed_image: The processed image (numpy array).
+    :param distances_to_targets: Calculated distances to targets for annotation.
+    :param iteration: Current iteration or frame number to uniquely name the output file.
+    """
+    # Convert processed image to RGB for plotting
+    if len(processed_image.shape) == 2:  # Grayscale to RGB
+        processed_image = np.stack((processed_image,) * 3, axis=-1)
+
+    fig, ax = plt.subplots()
+    ax.imshow(processed_image, cmap='gray')
+
+    # Plot agent location
+    if agent_location:
+        ax.scatter(agent_location[0][1], agent_location[0][0], color='red', s=100, label='Agent', edgecolors='w')
+
+    # Plot pickup locations
+    for loc in pick_up_locations:
+        ax.scatter(loc[1], loc[0], color='lime', s=100, label='Pickup', edgecolors='w')
+        # Draw line from agent to pickup location
+        if agent_location:
+            ax.plot([agent_location[0][1], loc[1]], [agent_location[0][0], loc[0]], color='yellow', linestyle='-',
+                    linewidth=1)
+
+    # Remove axis
+    plt.axis('off')
+
+    # Save plot to a PNG file
+    plt.savefig(f"debug_frame_{iteration_counter}.png", bbox_inches='tight', pad_inches=0)
+    plt.close(fig)
+
+    # Reopen the saved image to annotate with PIL
+    image = Image.open(f"debug_frame_{iteration_counter}.png")
+    draw = ImageDraw.Draw(image)
+
+    # Prepare text to overlay
+    text = f"Distances: {distances_to_targets}\nCached: {cached_distances_to_targets}"
+
+    # Add text overlay to the image in the top-left corner
+    draw.text((10, 10), text, fill=(255, 255, 255))
+
+    # Save the annotated image
+    image.save(f"annotated_debug_frame_{iteration_counter}.png")
+
+
+def observe_step(delay):
+
+    reward = 0
     print("cached", cached_distances_to_targets)
-    distances_to_targets = []
+    distances_to_targets.clear()
+
     for loc in pick_up_locations:
         distances_to_targets.append(calculate_distance(loc, agent_location))
 
     distances_to_targets.sort(reverse=True)
     print("distances",  distances_to_targets)
 
+    action = random_action(delay)
+
     #check if any pick-ups are gone
     if len(cached_distances_to_targets) > 0:
         for i in range(len(distances_to_targets)):
-            if distances_to_targets[i] < cached_distances_to_targets[i]:
-                print("yay rewARD")
+            if len(distances_to_targets) > len(cached_distances_to_targets):
+                print("cached longer than distances", distances_to_targets[i], "dist", len(distances_to_targets), "cached", len(cached_distances_to_targets))
+            elif distances_to_targets[i] < cached_distances_to_targets[i]:
+                reward += 1
                 cached_distances_to_targets[i] = distances_to_targets[i]
     else:
         for i in range(len(distances_to_targets)):
             cached_distances_to_targets.append(distances_to_targets[i])
 
-
-def find_pixels_by_intensity(image_array, target_intensity):
-    """
-    Find pixels in a grayscale image that match a given intensity value.
-
-    :param image_array: NumPy array of the grayscale image.
-    :param target_intensity: The intensity value to find (0 to 255 for 8-bit images).
-    :return: List of tuples, each tuple represents the (x, y) position of a matching pixel.
-    """
-    # Ensure the target intensity is within the valid range for grayscale images
-    if not 0 <= target_intensity <= 255:
-        raise ValueError("Target intensity must be between 0 and 255.")
-
-    # Find where the image array matches the target intensity
-    matches = np.where(image_array == target_intensity)
-
-    # 'matches' is a tuple containing two arrays: one for the y indices and one for the x indices of matching pixels
-    # Zip these arrays to get a list of (x, y) positions
-    matching_positions = list(zip(matches[1], matches[0]))  # Note the order of indices is reversed (x, y)
-
-    print("machy possy")
-    print(matching_positions)
-    return matching_positions
+    return reward
 
 
 def find_player_by_color_range(image_array, player_range):
@@ -170,20 +238,24 @@ def find_player_by_color_range(image_array, player_range):
     print("no pos")
     return None
 
-def find_pixels_by_color_vectorized(image_array, target_gray):
+
+def find_pixels_by_color_vectorized(image_array):
     pos_i_count = 0
     pos_j_count = 0
     positions = []
+    agent_position = None
     for i in image_array:
         for j in i:
-            if j == target_gray:
+            if blue_min < j[0] < blue_max: #blue
                 positions.append((pos_i_count, pos_j_count))
-            pos_j_count += 1
+            elif agent_min < j[1] < agent_max: #grey
+                agent_position = (pos_i_count, pos_j_count)
 
+            pos_j_count += 1
         pos_i_count += 1
         pos_j_count = 0
 
-    return positions
+    return [positions, agent_position]
 
 
 # Infinite loop to continuously capture and overwrite screenshots
@@ -191,16 +263,29 @@ try:
     while True:
         if not gw.getWindowsWithTitle(window_title) or not gw.getWindowsWithTitle(other_window_title):
             print("Game process closed. Aborting screenshot capture.")
+            print("Score:", score)
             break
 
+        iteration_counter = 0
         for index in range(4):
             # Define a file name for each screenshot
             filename = f"processed_screenshot_{index}.png"
 
             # Process the screenshot and save
-            process_and_stack_frames("stacked_frames", filename)
+            curr_processed_image = process_and_stack_frames("stacked_frames", filename)
 
-            random_action(0.125)  # Adjust the sleep time as needed
+            locations = find_pixels_by_color_vectorized(curr_processed_image)
+            pick_up_locations = locations[0]
+            agent_location = locations[1]
+
+            # debug_visualization_image(curr_processed_image, iteration_counter)
+
+            if agent_location is not None:
+                score += observe_step(0.125)
+
+            # Debug visualization call
+            iteration_counter += 1
+            #random_action(0.125)  # Adjust the sleep time as needed
 
 
     #print(np.load("stacked_frames.npy"))
