@@ -14,8 +14,10 @@ namespace constants
     #define MAP_HEIGHT 22
     #define PROGRESSION_INCREMENT 3
     #define SLIDER_WIDTH 20
+    #define MAX_LEVELS 10
 
-
+    const std::string pickUpTag = "Pickup";
+    const std::string enemyTag = "";
     //gResPath-contains the relative path to your resources.
 	const std::string gResPath = "resources/";
 

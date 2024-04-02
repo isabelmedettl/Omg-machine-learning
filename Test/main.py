@@ -47,7 +47,6 @@ distances_to_targets = []
 
 pick_up_locations = []
 ds = (0, 0)
-
 # gray constants
 agent_gray = range(80, 120)
 pick_up_target_gray = 200.0 / 255.0

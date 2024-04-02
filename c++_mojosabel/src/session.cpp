@@ -14,94 +14,6 @@ namespace mojosabel {
         rootCanvas = new Canvas();
     }
 
-    void Session::saveRenderedImage()
-    {
-        if (sys.getWin() == nullptr)
-        {
-            std::cout << "Error: no window" << std::endl;
-            return;
-        }
-
-        if (window == nullptr)
-        {
-            std::cout << "window pointer set" << std::endl;
-            window = sys.getWin();
-        }
-
-        SDL_Surface* currentWindowSurface = SDL_GetWindowSurface(window); 
-        if (currentWindowSurface == nullptr)
-        {
-            std::cout << "Error: couldn´t get surface from window" << std::endl;
-            return;
-        }
-       
-        if (compareToCachedSurface(currentWindowSurface) == false)
-        {
-            std::cout << "No need to save image, nothing changed" << std::endl;
-            return;
-        }
-
-        if (sys.saveFolderExists() == false)
-        {
-            std::cout << "no save folder, cant save" << std::endl;
-            return;
-        }
-       
-        savedFileCount++;
-        std::string saveString =  constants::saveFileName + std::to_string(savedFileCount) + ".bmp";
-        const int length = saveString.length(); 
-        char* char_array = new char[length + 1]; 
-        strcpy(char_array, saveString.c_str()); 
-        
-
-        if (SDL_SaveBMP(currentWindowSurface, char_array) != 0)
-        {
-            SDL_Log("Couldn´t save bitmap noooo :( %s\n)", SDL_GetError());
-            std::cout << "Couldn´t save bitmap noooo :( %s\n)" << std::endl;
-        }
-
-        cachedSurface = currentWindowSurface;
-        SDL_FreeSurface(currentWindowSurface);
-    }
-
-    int Session::compareToCachedSurface(SDL_Surface* const surface)
-    {
-        if (cachedSurface == nullptr)
-        {
-            //no cached surface means it´s the first frame, this should be saved by default
-            std::cout << "no cached surface" << std::endl;
-            return true;
-        }
-
-        if (surface->w != cachedSurface->w || surface->h != cachedSurface->h) 
-        {
-            // Surfaces are of different sizes, cannot compare
-            std::cout << "different sizes" << std::endl;
-            return false;
-        }
-
-        SDL_LockSurface(surface);
-        SDL_LockSurface(cachedSurface);
-
-        int numPixels = surface->w * surface->h;
-        for (int i = 0; i < numPixels; i++) 
-        {
-            Uint32* pixels1 = (Uint32*)surface->pixels;
-            Uint32* pixels2 = (Uint32*)cachedSurface->pixels;
-
-            if (pixels1[i] != pixels2[i]) 
-            {
-                SDL_UnlockSurface(surface);
-                SDL_UnlockSurface(cachedSurface);
-                return true; // Found a difference
-            }
-        }
-
-        SDL_UnlockSurface(surface);
-        SDL_UnlockSurface(cachedSurface);
-        std::cout << "no diff found" << std::endl;
-        return true; // No differences found
-    }
 
 
     void Session::add(Entity* entityToAdd)
@@ -224,6 +136,11 @@ namespace mojosabel {
                         Collision<Entity> col = Collision(entity, entity->tag);
                         entityToCheck->onCollision(col);
                     }
+                    // add check for enemy for other game
+                    if (entityToCheck->tag == constants::pickUpTag)
+                    {
+                        updateCurrentPickupCount();
+                    }
                 }
             }
         }
@@ -277,24 +194,25 @@ namespace mojosabel {
         currentLevel = world->getCurrentLevelIndex();
     }
 
+    void Session::updateCurrentPickupCount()
+    {
+        currentProgressionValue--;
+    }
+
     void Session::renderSliders(SDL_Renderer* renderer)
     {
-        /*
-        int sliderWidth = 20;
-        int screenHeight = constants::SCREEN_HEIGHT;
-        int pickupsSliderHeight = (screenHeight * pickupsRemaining) / constants::MAX_PICKUPS_PER_LEVEL;
-        int levelsSliderHeight = (screenHeight * currentLevel) / constants::MAX_LEVELS;
+        int pickupsSliderHeight = (SCREEN_HEIGHT * currentProgressionValue) / currentProgressionMaxValue;
+        int levelsSliderHeight = (SCREEN_HEIGHT * currentLevel) / MAX_LEVELS;
 
         // Draw pickups slider right side
-        SDL_Rect pickupsSliderRect = {constants::SCREEN_WIDTH - sliderWidth, screenHeight - pickupsSliderHeight, sliderWidth, pickupsSliderHeight};
+        SDL_Rect pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH, SCREEN_HEIGHT - pickupsSliderHeight, SLIDER_WIDTH, pickupsSliderHeight};
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color
         SDL_RenderFillRect(renderer, &pickupsSliderRect);
 
         // Draw levels slider left side
-        SDL_Rect levelsSliderRect = {0, screenHeight - levelsSliderHeight, SLIDER_WIDTH, levelsSliderHeight};
+        SDL_Rect levelsSliderRect = {0, SCREEN_HEIGHT - levelsSliderHeight, SLIDER_WIDTH, levelsSliderHeight};
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color
         SDL_RenderFillRect(renderer, &levelsSliderRect);
-        */
     }
 
     void Session::createNewWorld(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
@@ -343,7 +261,7 @@ namespace mojosabel {
                 }
             }
 
-            
+            renderSliders(sys.getRen());
             SDL_SetRenderDrawColor(sys.getRen(), 255, 255, 255, 255);
             SDL_RenderClear(sys.getRen());
             world->drawCurrentLevel();
@@ -362,7 +280,6 @@ namespace mojosabel {
                 sortEntitiesByLayer();
             }
             addedEntities.clear();
-
 
             for (Entity* e : removedEntities)
             {
@@ -386,12 +303,7 @@ namespace mojosabel {
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
 
-            if (saveImageCounter <= saveRenderedImageCap)
-            {
-                //saveRenderedImage();
-                saveImageCounter++;
-            }
-
+            
             if(loadNextLevel)
             {
                 for(loadLevelFunc f : funcsOnLoadLevel)

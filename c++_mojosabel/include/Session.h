@@ -32,11 +32,9 @@ namespace mojosabel {
         void capFrameRate(long *renderTime, float *remainder);
         void sortEntitiesByLayer();
 
-        int saveRenderedImageCap = 100;
-        int savedFileCount = 0;
-
         int currentLevel = 0;
         int currentProgressionMaxValue = 0;
+        int currentProgressionValue = 0;
 
         SDL_Surface* cachedSurface = nullptr;
 
@@ -56,6 +54,8 @@ namespace mojosabel {
             funcsOnLoadLevel.push_back(funcToAdd); 
             updateCurrentProgressionInfo();
         }
+
+        void updateCurrentPickupCount();
         void updateCurrentProgressionInfo();
         World* getWorld() { return world; }
         ~Session();
@@ -65,8 +65,8 @@ namespace mojosabel {
 
     private:
          /* === Saving and creating files */
-        int compareToCachedSurface(SDL_Surface* const surface);
-        void saveRenderedImage();
+        //int compareToCachedSurface(SDL_Surface* const surface);
+        //void saveRenderedImage();
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med
