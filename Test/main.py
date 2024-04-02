@@ -27,6 +27,7 @@ screenshot_boundaries = (int(screen_wc - game_w / 2), int(screen_hc - game_h / 2
 WINDOW_LENGTH = 4  # Number of frames to stack
 frame_queue = deque(maxlen=WINDOW_LENGTH)  # Queue to hold the last N frames
 
+delay_between_actions = 0.125
 
 # Function to capture and process the screenshot
 user32 = ctypes.windll.user32
@@ -63,7 +64,7 @@ agent_min = 0.31
 agent_max = 0.471
 
 
-def  process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
+def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
     # Capture the screenshot
     image = pyautogui.screenshot(region=screenshot_boundaries)
 
@@ -113,11 +114,14 @@ def  process_and_stack_frames(output_filename_stacks, output_filename_screenshot
 # Start the game or application and get the process id
 
 
-game_path = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+# Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
+# Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
+
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 os.startfile(game_path)
 time.sleep(2)
 
-window_title = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with the actual title of your game window
+window_title = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with the actual title of your game window
 other_window_title = "Mojosabel"
 
 print("Starting screenshot capture. The loop will abort when the program stops running.")
@@ -200,7 +204,7 @@ def debug_visualization_image(processed_image, it_counter):
     image.save(f"annotated_debug_frame_{iteration_counter}.png")
 
 
-def observe_step(delay):
+def play_step(action):
 
     reward = 0
     print("cached", cached_distances_to_targets)
@@ -212,7 +216,11 @@ def observe_step(delay):
     distances_to_targets.sort(reverse=True)
     print("distances",  distances_to_targets)
 
-    action = random_action(delay)
+    for x in action:
+        pdi.keyDown(x)
+    time.sleep(delay_between_actions)
+    for y in action:
+        pdi.keyUp(y)
 
     #check if any pick-ups are gone
     if len(cached_distances_to_targets) > 0:
@@ -227,16 +235,6 @@ def observe_step(delay):
             cached_distances_to_targets.append(distances_to_targets[i])
 
     return reward
-
-
-def find_player_by_color_range(image_array, player_range):
-    for i in player_range:
-        position = find_pixels_by_color_vectorized(image_array, i / 255.0)
-        if len(position) > 0:
-            return position
-
-    print("no pos")
-    return None
 
 
 def find_pixels_by_color_vectorized(image_array):
@@ -281,12 +279,10 @@ try:
             # debug_visualization_image(curr_processed_image, iteration_counter)
 
             if agent_location is not None:
-                score += observe_step(0.125)
+                score += play_step(random_action(delay_between_actions))
 
             # Debug visualization call
             iteration_counter += 1
-            #random_action(0.125)  # Adjust the sleep time as needed
-
 
     #print(np.load("stacked_frames.npy"))
 except KeyboardInterrupt:
