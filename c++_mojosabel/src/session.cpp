@@ -19,16 +19,6 @@ namespace mojosabel {
        // progressionSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/WhiteSquare.png").c_str() );
 		//levelSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/BlackSquare.png").c_str() );
 
-        SDL_Surface* progressionLoadedSurface = IMG_Load((constants::gResPath + "images/BlackSquare.png").c_str());
-        progressionSliderImage = SDL_CreateTextureFromSurface(sys.getRen(), progressionLoadedSurface);
-        // Get rid of the loaded surface
-        //SDL_FreeSurface(progressionLoadedSurface);
-
-
-        SDL_Surface* levelLoadedSurface = IMG_Load((constants::gResPath + "images/WhiteSquare.png").c_str());
-        levelSliderImage = SDL_CreateTextureFromSurface(sys.getRen(), levelLoadedSurface);
-        // Get rid of the loaded surface
-        //SDL_FreeSurface(progressionLoadedSurface);
     }
 
 
@@ -128,7 +118,7 @@ namespace mojosabel {
                             if (checkColliders(c.rect, entity->getColliders())) // om någon av colliders kolliderar: skapa en collision och kör on collision i objektet vi kollar
                             {
                                 Collision<Entity> col = Collision(entity, entity->tag);
-                                if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                                if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
                                 {
                                     world->currentProgressionValue++;
                                 }
@@ -141,7 +131,7 @@ namespace mojosabel {
                         if (checkColliders(*entityToCheck->getRect(), entity->getColliders())) 
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
-                            if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
                             {
                                 world->currentProgressionValue++;
                             }
@@ -153,7 +143,7 @@ namespace mojosabel {
                         if (checkColliders(*entity->getRect(), entityToCheck->getColliders()))
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
-                            if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr )
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
                             {
                                 world->currentProgressionValue++;
                             }
@@ -164,7 +154,7 @@ namespace mojosabel {
                     else 
                     {
                         Collision<Entity> col = Collision(entity, entity->tag);
-                        if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                        if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
                         {
                             world->currentProgressionValue++;
                         }
@@ -375,8 +365,6 @@ namespace mojosabel {
        // SDL_FreeSurface(cachedSurface);
         delete world;
         delete rootCanvas;
-        SDL_DestroyTexture(progressionSliderImage);
-		SDL_DestroyTexture(levelSliderImage);
     }
 
     Session ses;

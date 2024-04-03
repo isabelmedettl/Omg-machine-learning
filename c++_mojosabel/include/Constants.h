@@ -20,6 +20,7 @@ namespace constants
     #define MAX_LEVELS 10
 
     const std::string pickUpTag = "Pickup";
+    const std::string playerTag = "Player";
     //gResPath-contains the relative path to your resources.
 	const std::string gResPath = "resources/";
 
