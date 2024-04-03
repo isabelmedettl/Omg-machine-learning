@@ -33,10 +33,12 @@ namespace mojosabel {
         void sortEntitiesByLayer();
 
         int currentLevel = 0;
-        int currentProgressionMaxValue = 0;
-        int currentProgressionValue = 0;
+        int currentProgressionMaxValue = 3;
 
         SDL_Surface* cachedSurface = nullptr;
+
+        SDL_Texture* progressionSliderImage = nullptr;
+        SDL_Texture* levelSliderImage = nullptr;
 
     public:
         Session();
@@ -49,14 +51,7 @@ namespace mojosabel {
         void clearEntities();
         void clearEntitiesExcept(std::string tag);
         void setLoadNextLevel(bool toSet) { loadNextLevel = toSet; }
-        void addLoadLevelFunc(loadLevelFunc funcToAdd) 
-        { 
-            funcsOnLoadLevel.push_back(funcToAdd); 
-            updateCurrentProgressionInfo();
-        }
-
-        void updateCurrentPickupCount();
-        void updateCurrentProgressionInfo();
+        void addLoadLevelFunc(loadLevelFunc funcToAdd) { funcsOnLoadLevel.push_back(funcToAdd); }
         World* getWorld() { return world; }
         ~Session();
         Canvas* getRootCanvas() {return rootCanvas;};

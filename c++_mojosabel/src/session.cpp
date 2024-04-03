@@ -1,10 +1,13 @@
 #include <iostream>
 #include <algorithm>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_surface.h>
 #include "Session.h"
 #include "System.h"
 #include "Collision.h"
+#include "JosPlayer.h"
+
 
 namespace mojosabel {
    
@@ -12,6 +15,20 @@ namespace mojosabel {
     {
         std::cout << "Hej det funkar, session" << std::endl;
         rootCanvas = new Canvas();
+
+       // progressionSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/WhiteSquare.png").c_str() );
+		//levelSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/BlackSquare.png").c_str() );
+
+        SDL_Surface* progressionLoadedSurface = IMG_Load((constants::gResPath + "images/BlackSquare.png").c_str());
+        progressionSliderImage = SDL_CreateTextureFromSurface(sys.getRen(), progressionLoadedSurface);
+        // Get rid of the loaded surface
+        //SDL_FreeSurface(progressionLoadedSurface);
+
+
+        SDL_Surface* levelLoadedSurface = IMG_Load((constants::gResPath + "images/WhiteSquare.png").c_str());
+        levelSliderImage = SDL_CreateTextureFromSurface(sys.getRen(), levelLoadedSurface);
+        // Get rid of the loaded surface
+        //SDL_FreeSurface(progressionLoadedSurface);
     }
 
 
@@ -111,6 +128,10 @@ namespace mojosabel {
                             if (checkColliders(c.rect, entity->getColliders())) // om någon av colliders kolliderar: skapa en collision och kör on collision i objektet vi kollar
                             {
                                 Collision<Entity> col = Collision(entity, entity->tag);
+                                if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                                {
+                                    world->currentProgressionValue++;
+                                }
                                 entityToCheck->onCollision(col);
                             } 
                        }
@@ -120,6 +141,10 @@ namespace mojosabel {
                         if (checkColliders(*entityToCheck->getRect(), entity->getColliders())) 
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                            {
+                                world->currentProgressionValue++;
+                            }
                             entityToCheck->onCollision(col);
                         }
                     }
@@ -128,19 +153,24 @@ namespace mojosabel {
                         if (checkColliders(*entity->getRect(), entityToCheck->getColliders()))
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr )
+                            {
+                                world->currentProgressionValue++;
+                            }
+
                             entityToCheck->onCollision(col);
                         }
                     }
                     else 
                     {
                         Collision<Entity> col = Collision(entity, entity->tag);
+                        if (col.tag =="Pickup" && entityToCheck->tag == "Player" && world != nullptr)
+                        {
+                            world->currentProgressionValue++;
+                        }
                         entityToCheck->onCollision(col);
                     }
-                    // add check for enemy for other game
-                    if (entityToCheck->tag == constants::pickUpTag)
-                    {
-                        updateCurrentPickupCount();
-                    }
+                    
                 }
             }
         }
@@ -184,34 +214,27 @@ namespace mojosabel {
         return true;
     }
 
-    void Session::updateCurrentProgressionInfo()
+   
+
+    void Session::renderSliders(SDL_Renderer* renderer)
     {
         if (world == nullptr)
         {
             return;
         }
-        currentProgressionMaxValue = world->getCurrentLevelIndex() + PROGRESSION_INCREMENT;
+        currentProgressionMaxValue = world->getMaxProgression();
         currentLevel = world->getCurrentLevelIndex();
-    }
-
-    void Session::updateCurrentPickupCount()
-    {
-        currentProgressionValue--;
-    }
-
-    void Session::renderSliders(SDL_Renderer* renderer)
-    {
-        int pickupsSliderHeight = (SCREEN_HEIGHT * currentProgressionValue) / currentProgressionMaxValue;
+        int pickupsSliderHeight = (SCREEN_HEIGHT * world->currentProgressionValue) / currentProgressionMaxValue;
         int levelsSliderHeight = (SCREEN_HEIGHT * currentLevel) / MAX_LEVELS;
 
         // Draw pickups slider right side
-        SDL_Rect pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH, SCREEN_HEIGHT - pickupsSliderHeight, SLIDER_WIDTH, pickupsSliderHeight};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color
+        const SDL_Rect& pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH, SCREEN_HEIGHT, SLIDER_WIDTH, -pickupsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
         SDL_RenderFillRect(renderer, &pickupsSliderRect);
-
+        
         // Draw levels slider left side
-        SDL_Rect levelsSliderRect = {0, SCREEN_HEIGHT - levelsSliderHeight, SLIDER_WIDTH, levelsSliderHeight};
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color
+        const SDL_Rect& levelsSliderRect = {0, SCREEN_HEIGHT, SLIDER_WIDTH, -levelsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // White color
         SDL_RenderFillRect(renderer, &levelsSliderRect);
     }
 
@@ -226,7 +249,6 @@ namespace mojosabel {
         renderTime = SDL_GetTicks();
         remainder = 0;
         bool quit = false;
-        int saveImageCounter = 0;
 
         while(!quit)
         {
@@ -261,7 +283,6 @@ namespace mojosabel {
                 }
             }
 
-            renderSliders(sys.getRen());
             SDL_SetRenderDrawColor(sys.getRen(), 255, 255, 255, 255);
             SDL_RenderClear(sys.getRen());
             world->drawCurrentLevel();
@@ -300,7 +321,9 @@ namespace mojosabel {
           
             // Ritar sprite objekt
             rootCanvas->drawSprites();
+            renderSliders(sys.getRen());
             SDL_RenderPresent(sys.getRen());
+
             capFrameRate(&renderTime, &remainder);
 
             
@@ -352,6 +375,8 @@ namespace mojosabel {
        // SDL_FreeSurface(cachedSurface);
         delete world;
         delete rootCanvas;
+        SDL_DestroyTexture(progressionSliderImage);
+		SDL_DestroyTexture(levelSliderImage);
     }
 
     Session ses;
