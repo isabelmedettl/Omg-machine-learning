@@ -1,10 +1,13 @@
 #include <iostream>
 #include <algorithm>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_surface.h>
 #include "Session.h"
 #include "System.h"
 #include "Collision.h"
+#include "JosPlayer.h"
+
 
 namespace mojosabel {
    
@@ -12,96 +15,12 @@ namespace mojosabel {
     {
         std::cout << "Hej det funkar, session" << std::endl;
         rootCanvas = new Canvas();
+
+       // progressionSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/WhiteSquare.png").c_str() );
+		//levelSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/BlackSquare.png").c_str() );
+
     }
 
-    void Session::saveRenderedImage()
-    {
-        if (sys.getWin() == nullptr)
-        {
-            std::cout << "Error: no window" << std::endl;
-            return;
-        }
-
-        if (window == nullptr)
-        {
-            std::cout << "window pointer set" << std::endl;
-            window = sys.getWin();
-        }
-
-        SDL_Surface* currentWindowSurface = SDL_GetWindowSurface(window); 
-        if (currentWindowSurface == nullptr)
-        {
-            std::cout << "Error: couldn´t get surface from window" << std::endl;
-            return;
-        }
-       
-        if (compareToCachedSurface(currentWindowSurface) == false)
-        {
-            std::cout << "No need to save image, nothing changed" << std::endl;
-            return;
-        }
-
-        if (sys.saveFolderExists() == false)
-        {
-            std::cout << "no save folder, cant save" << std::endl;
-            return;
-        }
-       
-        savedFileCount++;
-        std::string saveString =  constants::saveFileName + std::to_string(savedFileCount) + ".bmp";
-        const int length = saveString.length(); 
-        char* char_array = new char[length + 1]; 
-        strcpy(char_array, saveString.c_str()); 
-        
-
-        if (SDL_SaveBMP(currentWindowSurface, char_array) != 0)
-        {
-            SDL_Log("Couldn´t save bitmap noooo :( %s\n)", SDL_GetError());
-            std::cout << "Couldn´t save bitmap noooo :( %s\n)" << std::endl;
-        }
-
-        cachedSurface = currentWindowSurface;
-        SDL_FreeSurface(currentWindowSurface);
-    }
-
-    int Session::compareToCachedSurface(SDL_Surface* const surface)
-    {
-        if (cachedSurface == nullptr)
-        {
-            //no cached surface means it´s the first frame, this should be saved by default
-            std::cout << "no cached surface" << std::endl;
-            return true;
-        }
-
-        if (surface->w != cachedSurface->w || surface->h != cachedSurface->h) 
-        {
-            // Surfaces are of different sizes, cannot compare
-            std::cout << "different sizes" << std::endl;
-            return false;
-        }
-
-        SDL_LockSurface(surface);
-        SDL_LockSurface(cachedSurface);
-
-        int numPixels = surface->w * surface->h;
-        for (int i = 0; i < numPixels; i++) 
-        {
-            Uint32* pixels1 = (Uint32*)surface->pixels;
-            Uint32* pixels2 = (Uint32*)cachedSurface->pixels;
-
-            if (pixels1[i] != pixels2[i]) 
-            {
-                SDL_UnlockSurface(surface);
-                SDL_UnlockSurface(cachedSurface);
-                return true; // Found a difference
-            }
-        }
-
-        SDL_UnlockSurface(surface);
-        SDL_UnlockSurface(cachedSurface);
-        std::cout << "no diff found" << std::endl;
-        return true; // No differences found
-    }
 
 
     void Session::add(Entity* entityToAdd)
@@ -147,7 +66,10 @@ namespace mojosabel {
     {
         long wait, frameTime;
 
-        wait = 16 + *remainder; 
+        //1000 milliseconds / 60 frames = 16 ms
+        int roundFPS = 1000 / FPS;
+
+        wait = roundFPS + *remainder; 
 
         *remainder -= (int)*remainder;
 
@@ -199,6 +121,10 @@ namespace mojosabel {
                             if (checkColliders(c.rect, entity->getColliders())) // om någon av colliders kolliderar: skapa en collision och kör on collision i objektet vi kollar
                             {
                                 Collision<Entity> col = Collision(entity, entity->tag);
+                                if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                                {
+                                    world->currentProgressionValue++;
+                                }
                                 entityToCheck->onCollision(col);
                             } 
                        }
@@ -208,6 +134,10 @@ namespace mojosabel {
                         if (checkColliders(*entityToCheck->getRect(), entity->getColliders())) 
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                            {
+                                world->currentProgressionValue++;
+                            }
                             entityToCheck->onCollision(col);
                         }
                     }
@@ -216,14 +146,24 @@ namespace mojosabel {
                         if (checkColliders(*entity->getRect(), entityToCheck->getColliders()))
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                            {
+                                world->currentProgressionValue++;
+                            }
+
                             entityToCheck->onCollision(col);
                         }
                     }
                     else 
                     {
                         Collision<Entity> col = Collision(entity, entity->tag);
+                        if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                        {
+                            world->currentProgressionValue++;
+                        }
                         entityToCheck->onCollision(col);
                     }
+                    
                 }
             }
         }
@@ -267,34 +207,28 @@ namespace mojosabel {
         return true;
     }
 
-    void Session::updateCurrentProgressionInfo()
+   
+
+    void Session::renderSliders(SDL_Renderer* renderer)
     {
         if (world == nullptr)
         {
             return;
         }
-        currentProgressionMaxValue = world->getCurrentLevelIndex() + PROGRESSION_INCREMENT;
+        currentProgressionMaxValue = world->getMaxProgression();
         currentLevel = world->getCurrentLevelIndex();
-    }
-
-    void Session::renderSliders(SDL_Renderer* renderer)
-    {
-        /*
-        int sliderWidth = 20;
-        int screenHeight = constants::SCREEN_HEIGHT;
-        int pickupsSliderHeight = (screenHeight * pickupsRemaining) / constants::MAX_PICKUPS_PER_LEVEL;
-        int levelsSliderHeight = (screenHeight * currentLevel) / constants::MAX_LEVELS;
+        int pickupsSliderHeight = (SCREEN_HEIGHT * world->currentProgressionValue) / currentProgressionMaxValue;
+        int levelsSliderHeight = (SCREEN_HEIGHT * currentLevel) / MAX_LEVELS;
 
         // Draw pickups slider right side
-        SDL_Rect pickupsSliderRect = {constants::SCREEN_WIDTH - sliderWidth, screenHeight - pickupsSliderHeight, sliderWidth, pickupsSliderHeight};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color
+        const SDL_Rect& pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH, SCREEN_HEIGHT, SLIDER_WIDTH, -pickupsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
         SDL_RenderFillRect(renderer, &pickupsSliderRect);
-
+        
         // Draw levels slider left side
-        SDL_Rect levelsSliderRect = {0, screenHeight - levelsSliderHeight, SLIDER_WIDTH, levelsSliderHeight};
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color
+        const SDL_Rect& levelsSliderRect = {0, SCREEN_HEIGHT, SLIDER_WIDTH, -levelsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // White color
         SDL_RenderFillRect(renderer, &levelsSliderRect);
-        */
     }
 
     void Session::createNewWorld(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
@@ -308,7 +242,6 @@ namespace mojosabel {
         renderTime = SDL_GetTicks();
         remainder = 0;
         bool quit = false;
-        int saveImageCounter = 0;
 
         while(!quit)
         {
@@ -343,7 +276,6 @@ namespace mojosabel {
                 }
             }
 
-            
             SDL_SetRenderDrawColor(sys.getRen(), 255, 255, 255, 255);
             SDL_RenderClear(sys.getRen());
             world->drawCurrentLevel();
@@ -353,7 +285,6 @@ namespace mojosabel {
             {
                 e->sneakyUpdate();
                 checkAllCollisions(e);
-                
             }
  
             for (Entity* e : addedEntities)
@@ -362,7 +293,6 @@ namespace mojosabel {
                 sortEntitiesByLayer();
             }
             addedEntities.clear();
-
 
             for (Entity* e : removedEntities)
             {
@@ -383,15 +313,10 @@ namespace mojosabel {
           
             // Ritar sprite objekt
             rootCanvas->drawSprites();
+            renderSliders(sys.getRen());
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
-
-            if (saveImageCounter <= saveRenderedImageCap)
-            {
-                //saveRenderedImage();
-                saveImageCounter++;
-            }
-
+            
             if(loadNextLevel)
             {
                 for(loadLevelFunc f : funcsOnLoadLevel)

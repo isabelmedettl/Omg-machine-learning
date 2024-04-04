@@ -12,6 +12,7 @@ namespace mojosabel {
     {
     private:
         int currentLevel;
+        int maxProgression = 3;
         BitwiseMapGenerator* mapGenerator;
         std::vector<Level*> levels;
         
@@ -24,7 +25,11 @@ namespace mojosabel {
         void drawCurrentLevel();
         const int getCurrentLevelIndex() { return currentLevel; }
         Level* getCurrentLevel() { return levels[currentLevel]; }
+        int getMaxProgression() { return maxProgression; }
         BitwiseMapGenerator* getMapGenerator() { return mapGenerator; }
+        void setMaxProgression(int newMaxProgression);
+        int currentProgressionValue = 0;
+
         ~World();
     };
 }

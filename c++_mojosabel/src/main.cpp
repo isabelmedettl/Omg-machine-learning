@@ -29,6 +29,8 @@ void pickupsForNextLevel()
     int newCrystalsRequired = ses.getWorld()->getCurrentLevelIndex() + PROGRESSION_INCREMENT;
     generateGameObjects<JosPickup>(ses.getWorld()->getCurrentLevel(), newCrystalsRequired, "images/Crystals32p.png", true);
     static_cast<JosPlayer*>(ses.findEntity("Player"))->setCrystalsRequired(newCrystalsRequired);
+    ses.getWorld()->setMaxProgression(newCrystalsRequired);
+    ses.getWorld()->currentProgressionValue = 0;
 }
 
 int main(int argc, char* argv[]) 
@@ -50,6 +52,8 @@ int main(int argc, char* argv[])
     Vector2 spawnPos = ses.getWorld()->getCurrentLevel()->generateSpawnPosition();
     int spawnX = spawnPos.x;
     int spawnY = spawnPos.y;
+    std::cout << spawnPos.x << spawnPos.y << std::endl;
+
     JosPlayer* player = new JosPlayer(spawnX, spawnY);
     ses.add(player);
 

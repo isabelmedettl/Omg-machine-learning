@@ -6,6 +6,9 @@
 
 namespace constants
 {
+
+
+    // tile spawn constraints, player walk constraints to avoid sliders and window edges
     #define SCREEN_WIDTH 1280
     #define SCREEN_HEIGHT 720
     #define MAX_KEYBOARD_KEYS 350
@@ -13,9 +16,17 @@ namespace constants
     #define MAP_WIDTH 40
     #define MAP_HEIGHT 22
     #define PROGRESSION_INCREMENT 3
-    #define SLIDER_WIDTH 20
+    #define SLIDER_WIDTH 32
+    #define MAX_LEVELS 10
 
+   #define Y_MIN_OFFSET 0 
+   #define Y_MAX_OFFSET 22
+   #define X_MIN_OFFSET 1 
+   #define X_MAX_OFFSET 39
 
+    const std::string pickUpTag = "Pickup";
+    const std::string playerTag = "Player";
+    
     //gResPath-contains the relative path to your resources.
 	const std::string gResPath = "resources/";
 

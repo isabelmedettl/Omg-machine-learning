@@ -38,6 +38,11 @@ namespace mojosabel {
         levels[currentLevel]->drawTiles();
     }
 
+    void World::setMaxProgression(int newMaxProgression)
+    {
+        maxProgression = newMaxProgression;
+    }
+
     World::~World()
     {
         for (Level* p : levels) { delete p; }

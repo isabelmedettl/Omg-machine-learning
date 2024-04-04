@@ -1,5 +1,7 @@
 #include "GameObject.h"
 #include "Session.h"
+#include <iostream>
+
 
 namespace mojosabel
 {

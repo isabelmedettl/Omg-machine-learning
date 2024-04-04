@@ -32,13 +32,13 @@ namespace mojosabel {
         void capFrameRate(long *renderTime, float *remainder);
         void sortEntitiesByLayer();
 
-        int saveRenderedImageCap = 100;
-        int savedFileCount = 0;
-
         int currentLevel = 0;
-        int currentProgressionMaxValue = 0;
+        int currentProgressionMaxValue = 3;
 
         SDL_Surface* cachedSurface = nullptr;
+
+        SDL_Texture* progressionSliderImage = nullptr;
+        SDL_Texture* levelSliderImage = nullptr;
 
     public:
         Session();
@@ -51,22 +51,13 @@ namespace mojosabel {
         void clearEntities();
         void clearEntitiesExcept(std::string tag);
         void setLoadNextLevel(bool toSet) { loadNextLevel = toSet; }
-        void addLoadLevelFunc(loadLevelFunc funcToAdd) 
-        { 
-            funcsOnLoadLevel.push_back(funcToAdd); 
-            updateCurrentProgressionInfo();
-        }
-        void updateCurrentProgressionInfo();
+        void addLoadLevelFunc(loadLevelFunc funcToAdd) { funcsOnLoadLevel.push_back(funcToAdd); }
         World* getWorld() { return world; }
         ~Session();
         Canvas* getRootCanvas() {return rootCanvas;};
         Entity* findEntity(std::string name);
         void renderSliders(SDL_Renderer* renderer);
-
-    private:
-         /* === Saving and creating files */
-        int compareToCachedSurface(SDL_Surface* const surface);
-        void saveRenderedImage();
+        int FPS = 60;
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med
