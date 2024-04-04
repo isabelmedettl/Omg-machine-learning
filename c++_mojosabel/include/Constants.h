@@ -19,6 +19,12 @@ namespace constants
     #define SLIDER_WIDTH 32
     #define MAX_LEVELS 10
 
+
+   #define Y_MIN_OFFSET 0 
+   #define Y_MAX_OFFSET 22
+   #define X_MIN_OFFSET 1 
+   #define X_MAX_OFFSET 39
+
     const std::string pickUpTag = "Pickup";
     const std::string playerTag = "Player";
     //gResPath-contains the relative path to your resources.
