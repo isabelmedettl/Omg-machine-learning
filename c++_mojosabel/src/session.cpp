@@ -66,7 +66,10 @@ namespace mojosabel {
     {
         long wait, frameTime;
 
-        wait = 16 + *remainder; 
+        //1000 milliseconds / 60 frames = 16 ms
+        int roundFPS = 1000 / FPS;
+
+        wait = roundFPS + *remainder; 
 
         *remainder -= (int)*remainder;
 
@@ -282,7 +285,6 @@ namespace mojosabel {
             {
                 e->sneakyUpdate();
                 checkAllCollisions(e);
-                
             }
  
             for (Entity* e : addedEntities)
@@ -313,9 +315,7 @@ namespace mojosabel {
             rootCanvas->drawSprites();
             renderSliders(sys.getRen());
             SDL_RenderPresent(sys.getRen());
-
             capFrameRate(&renderTime, &remainder);
-
             
             if(loadNextLevel)
             {

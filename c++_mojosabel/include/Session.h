@@ -57,11 +57,7 @@ namespace mojosabel {
         Canvas* getRootCanvas() {return rootCanvas;};
         Entity* findEntity(std::string name);
         void renderSliders(SDL_Renderer* renderer);
-
-    private:
-         /* === Saving and creating files */
-        //int compareToCachedSurface(SDL_Surface* const surface);
-        //void saveRenderedImage();
+        int FPS = 60;
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med
