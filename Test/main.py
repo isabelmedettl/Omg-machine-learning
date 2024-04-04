@@ -165,11 +165,11 @@ def debug_visualization_image(processed_image, it_counter):
     plt.axis('off')
 
     # Save plot to a PNG file
-    plt.savefig(f"debug_frame_{iteration_counter}.png", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"debug_frame_{it_counter}.png", bbox_inches='tight', pad_inches=0)
     plt.close(fig)
 
     # Reopen the saved image to annotate with PIL
-    image = Image.open(f"debug_frame_{iteration_counter}.png")
+    image = Image.open(f"debug_frame_{it_counter}.png")
     draw = ImageDraw.Draw(image)
 
     # Prepare text to overlay
@@ -179,7 +179,7 @@ def debug_visualization_image(processed_image, it_counter):
     draw.text((10, 10), text, fill=(255, 255, 255))
 
     # Save the annotated image
-    image.save(f"annotated_debug_frame_{iteration_counter}.png")
+    image.save(f"annotated_debug_frame_{it_counter}.png")
 
 
 def play_step(action, screenshot_index):
@@ -195,11 +195,6 @@ def play_step(action, screenshot_index):
     white_pixels_premove = white_pixels
     black_pixels_premove = black_pixels
 
-    for loc in pick_up_locations:
-        distances_to_targets.append(calculate_distance(loc, agent_location))
-
-    distances_to_targets.sort(reverse=True)
-    print("distances", distances_to_targets)
     print(agent_location)
     if locations[1] is not None:
 
@@ -215,11 +210,26 @@ def play_step(action, screenshot_index):
         locations = find_pixels_by_color_vectorized(curr_processed_image)
         pick_up_locations = locations[0]
         agent_location = locations[1]
+
         for y in action:
             pdi.keyUp(y)
+
+        for loc in pick_up_locations:
+            distances_to_targets.append(calculate_distance(loc, agent_location))
+
+        distances_to_targets.sort(reverse=True)
+        print("distances", distances_to_targets)
+
     else:
         print("Player not found, doing random move")
         random_action(0.125)
+        filename = f"processed_screenshot_{screenshot_index}.png"
+
+        # Process the screenshot and save
+        curr_processed_image = process_and_stack_frames("stacked_frames", filename)
+        locations = find_pixels_by_color_vectorized(curr_processed_image)
+        pick_up_locations = locations[0]
+        agent_location = locations[1]
 
     # check if any pick-ups are gone
     if len(cached_distances_to_targets) > 0:
@@ -292,7 +302,7 @@ def train(episodes):
     global score
     global pick_up_locations, agent_location
     global locations
-    global white_pixels
+    global white_pixels, black_pixels
     global cached_distances_to_targets
     results = ""
 
@@ -300,6 +310,8 @@ def train(episodes):
         done = False
         step_counter = 0
         score = 0
+        white_pixels = 0
+        black_pixels = 0
         cached_distances_to_targets.clear()
         # Start the game or application and get the process id
         # Remember to ALSO CHANGE PATH FOR THE WINDOW AT LINE 55(ish)
@@ -313,7 +325,6 @@ def train(episodes):
         curr_processed_image = process_and_stack_frames("stacked_frames", filename)
         locations = find_pixels_by_color_vectorized(curr_processed_image)
         agent_location = locations[1]
-        print(locations)
 
         try:
             while True:
@@ -327,7 +338,6 @@ def train(episodes):
                     preloop = time.time()
                     score += play_step(random.choice(actions), index)
                     step_counter += 1
-                    print(step_counter)
                     print(time.time() - preloop)
                     # debug_visualization_image(curr_processed_image, iteration_counter)
 
