@@ -1,6 +1,6 @@
-from keras.models import Sequential
-from keras.layers import Dense, Flatten, Conv2D, Activation
-from keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, Activation
+from tensorflow.keras.optimizers import Adam
 
 def create_dqn_model(input_shape, action_space):
     model = Sequential()  # According to Tensorflow, sequential is only appropriate when the model has ONE input and ONE output, we have many more. Maybe reconsider.

@@ -1,20 +1,22 @@
 import os
-from PIL import Image, ImageDraw
+from PIL import Image
 import numpy as np
 import pyautogui
 import cv2
 import time
 import ctypes
 import pygetwindow as gw
-import psutil
 from collections import deque
-import random
 import pydirectinput as pdi
-#import matplotlib.pyplot as plt
-import keyboard
 import gym
 from gym.spaces import Discrete, Box
 from gymnasium.envs.registration import register
+from rl.agents import DQNAgent
+from rl.memory import SequentialMemory
+from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Conv2D, Activation
+from keras.optimizers import Adam
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
@@ -34,7 +36,6 @@ class Environment(gym.Env):
         super(Environment, self).__init__()
         self.action_space = Discrete(18)
         self.observation_space = Box(low=0, high=1, shape=(80, 44, 3), dtype=np.float32)  # Stack frames later
-
 
         # Initialize the state variables
         self.cached_distances_to_targets = []
@@ -61,8 +62,8 @@ class Environment(gym.Env):
         self.game_h = 720
         self.whiteborder_h = 16
         self.screenshot_boundaries = (
-        int(self.screen_wc - self.game_w / 2), int(self.screen_hc - self.game_h / 2), self.game_w,
-        self.game_h - self.whiteborder_h)
+            int(self.screen_wc - self.game_w / 2), int(self.screen_hc - self.game_h / 2), self.game_w,
+            self.game_h - self.whiteborder_h)
 
         # Define the actions as a class attribute
         self.actions = [["w"], ["a"], ["s"], ["d"], ["space"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"],
@@ -70,9 +71,7 @@ class Environment(gym.Env):
                         ["a", "space"], ["s", "space"], ["d", "space"], ["w", "a", "space"], ["w", "d", "space"],
                         ["s", "a", "space"], ["s", "d", "space"], [None]]
 
-
     def step(self, action_index):
-        print("took step")
         action = self.actions[action_index]
         if len(self.distances_to_targets) > 0:
             self.distances_to_targets.clear()
@@ -114,7 +113,7 @@ class Environment(gym.Env):
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-        print("it reset")
+
         if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
             os.system(f"taskkill /f /im play.exe")  # Stops the game
 
@@ -214,7 +213,7 @@ class Environment(gym.Env):
 
     def update_locations(self):
         # Process the screenshot and save
-        curr_processed_image = self.process_screenshot("screenshot00.png")
+        curr_processed_image = self.process_screenshot("screenshot00")
         locations = self.find_pixels_by_color_vectorized(curr_processed_image)
         self.pick_up_locations = locations[0]
         self.agent_location = locations[1]
@@ -257,3 +256,46 @@ class Environment(gym.Env):
         return False
 
 
+env = Environment()
+height, width, channels = env.observation_space.shape
+actions = env.action_space
+
+
+def build_model(height, width, channels, action_space):
+    model = Sequential()  # According to Tensorflow, sequential is only appropriate when the model has ONE input and ONE output, we have many more. Maybe reconsider.
+    model.add(Conv2D(16, (8, 8), strides=(4, 4), input_shape=(18, height, width,
+                                                              channels)))  # Because we use images, we need to first set up a convolutional network and then flatten it down. Input_shape is image
+    model.add(Activation('relu'))
+    model.add(Conv2D(32, (4, 4), strides=(2, 2)))
+    model.add(Activation('relu'))
+    model.add(Conv2D(64, (3, 3), strides=(1, 1)))
+    model.add(Activation('relu'))
+    model.add(Flatten())
+    model.add(Dense(256))
+    model.add(Activation('relu'))
+    model.add(Dense(action_space))  # Action_space is how many actions we have
+    model.compile(loss='mse', optimizer=Adam(lr=0.005))
+    return model
+
+
+model = build_model(height, width, channels, actions)
+
+model.summary()
+
+
+def build_agent(model, actions):
+    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.2,
+                                  nb_steps=1000)
+    memory = SequentialMemory(limit=100, window_length=3)
+    dqn = DQNAgent(model=model, memory=memory, policy=policy,
+                   enable_dueling_network=True, dueling_type='avg',
+                   nb_actions=actions, nb_steps_warmup=100
+                   )
+    return dqn
+
+
+dqn = build_agent(model, actions)
+dqn.compile(Adam(lr=5 * 1e-4))
+
+dqn.fit(env, nb_steps=1000, visualize=False, verbose=2)
+dqn.save_weights('SavedWeights/1k-test/dqn_weights.h5')
