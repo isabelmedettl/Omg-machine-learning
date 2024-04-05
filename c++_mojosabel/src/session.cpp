@@ -21,8 +21,6 @@ namespace mojosabel {
 
     }
 
-
-
     void Session::add(Entity* entityToAdd)
     {
         addedEntities.push_back(entityToAdd);
@@ -316,6 +314,11 @@ namespace mojosabel {
             renderSliders(sys.getRen());
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
+            
+            if (world->getCurrentLevelIndex() == 10)
+            {
+                break;
+            }
             
             if(loadNextLevel)
             {
