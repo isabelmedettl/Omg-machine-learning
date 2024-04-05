@@ -14,6 +14,19 @@ import matplotlib.pyplot as plt
 import keyboard
 import gym
 from gym.spaces import Discrete, Box
+from gymnasium.envs.registration import register
+
+# Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
+# Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+
+# Name of game window
+window_title = "Mojosabel"
+
+register(
+    id="Mojosabel-v0",
+    entry_point="Test.environment_omgml:Environment"  # This path could be wrong
+)
 
 
 class Environment(gym.Env):
@@ -24,6 +37,7 @@ class Environment(gym.Env):
 
         # Initialize the state variables
         self.cached_distances_to_targets = []
+        self.distances_to_targets = []  # Is this necessary?
         self.locations = []
         self.pick_up_locations = []
         self.agent_location = (0, 0)
@@ -33,6 +47,7 @@ class Environment(gym.Env):
         self.blue_max = 0.89
         self.agent_min = 0.28
         self.agent_max = 0.51
+        self.step_counter = 0
 
         self.WINDOW_LENGTH = 4  # Number of frames to stack
         self.frame_queue = deque(maxlen=self.WINDOW_LENGTH)  # Queue to hold the last N frames
@@ -56,22 +71,62 @@ class Environment(gym.Env):
 
     def step(self, action_index):
         action = self.actions[action_index]
-        reward = 0
-        distances_to_targets.clear()
+        if len(self.distances_to_targets) > 0:
+            self.distances_to_targets.clear()
 
+        white_pixels_premove = self.white_pixels
+        black_pixels_premove = self.black_pixels
 
+        if self.locations[1] is not None:
+            for x in action:
+                pdi.keyDown(x)
+            observation = self.update_locations()  # This might be replaced with an actual stable delay
+            for y in action:
+                pdi.keyUp(y)
+        else:
+            observation = self.update_locations()
 
-        return observation, reward, done
+        for loc in self.pick_up_locations:
+            self.distances_to_targets.append(self.calculate_distance(loc, self.agent_location))
+        self.distances_to_targets.sort(reverse=True)
+
+        reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
+
+        if reward >= 100:
+            done = True
+
+        info = self.get_info()
+        terminated = self.check_goal_state()
+
+        truncated = False
+        self.step_counter += 1
+        if self.step_counter >= 2000:
+            truncated = True
+
+        return observation, reward, terminated, truncated, info
 
     def render(self):
         pass
 
-    def reset(self):
-        pass
-        # kill exe
-        # reset global valutes
-        # start exe
-        # start stepping
+    def reset(self, seed=None, options=None):
+        # We need the following line to seed self.np_random
+        super().reset(seed=seed)
+
+        if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
+            os.system(f"taskkill /f /im play.exe")  # Stops the game
+
+        self.step_counter = 0
+        self.white_pixels = 0
+        self.black_pixels = 0
+        self.cached_distances_to_targets.clear()
+
+        os.startfile(game_path)
+        time.sleep(2)
+
+        observation = self.update_locations()
+        info = self.get_info()
+
+        return observation, info
 
     def find_pixels_by_color_vectorized(self, image_array):
         pos_i_count = 0
@@ -104,7 +159,7 @@ class Environment(gym.Env):
 
         return [positions, agent_position]
 
-    def process_and_stack_frames(self, output_filename_screenshot, input_shape=(80, 44)):
+    def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
         # Capture the screenshot
         image = pyautogui.screenshot(region=self.screenshot_boundaries)
 
@@ -144,7 +199,7 @@ class Environment(gym.Env):
 
         return processed_image_normalized
 
-    def stack_frames(self, processed_image_normalized, output_filename_stacks):
+    '''def OLD_stack_frames(self, processed_image_normalized, output_filename_stacks):
         self.frame_queue.append(processed_image_normalized)
 
         # Stack frames
@@ -152,4 +207,48 @@ class Environment(gym.Env):
             stacked_frames = np.stack(self.frame_queue, axis=-1)
             np.save(output_filename_stacks, stacked_frames)
 
-        return stacked_frames
+        return stacked_frames'''
+
+    def update_locations(self):
+        # Process the screenshot and save
+        curr_processed_image = self.process_screenshot("screenshot00")
+        locations = self.find_pixels_by_color_vectorized(curr_processed_image)
+        self.pick_up_locations = locations[0]
+        self.agent_location = locations[1]
+
+        return curr_processed_image
+
+    def calculate_distance(self, point1, point2):
+        return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
+
+    def calculate_reward(self, white_pixels_premove, black_pixels_premove):
+        reward = 0
+
+        if len(self.cached_distances_to_targets) > 0:
+            for i in range(len(self.distances_to_targets)):
+                if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
+                    print("Should get reward")
+                    reward += 1
+                    self.cached_distances_to_targets[i] = self.distances_to_targets[i]
+        else:
+            for i in range(len(self.distances_to_targets)):
+                self.cached_distances_to_targets.append(self.distances_to_targets[i])
+
+        if self.white_pixels > white_pixels_premove:
+            reward += 25  # Reward for progress (minerals / crocodiles)
+
+        if self.black_pixels > black_pixels_premove:
+            reward += 100  # Reward for level up
+
+        reward -= 1
+
+        return reward
+
+    def get_info(self):
+        return None
+
+    def check_goal_state(self):
+        if self.black_pixels >= 2200:
+            return True
+
+        return False
