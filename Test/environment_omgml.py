@@ -127,9 +127,9 @@ class Environment(gym.Env):
         time.sleep(2)
 
         observation = self.update_locations()
-        info = self.get_info()
+        # info = self.get_info()
 
-        return observation, info
+        return observation
 
     def find_pixels_by_color_vectorized(self, image_array):
         pos_i_count = 0

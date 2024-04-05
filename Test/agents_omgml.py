@@ -10,13 +10,10 @@ import environment_omgml
 
 
 env = environment_omgml.Environment()
-print(env)
 env = FrameStack(env, 3)
-print(env)
 
 states = env.observation_space.shape
 actions = env.action_space.n
-print(states)
 
 def build_model(states, actions):
     model = Sequential()
@@ -28,6 +25,7 @@ def build_model(states, actions):
     model.add(Dense(256, activation='relu'))
     model.add(Dense(actions, activation='linear'))
     return model
+
 
 
 model = build_model(states, actions)
