@@ -262,9 +262,8 @@ actions = env.action_space
 
 
 def build_model(height, width, channels, action_space):
-    model = Sequential()  # According to Tensorflow, sequential is only appropriate when the model has ONE input and ONE output, we have many more. Maybe reconsider.
-    model.add(Conv2D(16, (8, 8), strides=(4, 4), input_shape=(18, height, width,
-                                                              channels)))  # Because we use images, we need to first set up a convolutional network and then flatten it down. Input_shape is image
+    model = Sequential()
+    model.add(Conv2D(16, (8, 8), strides=(4, 4), input_shape=(18, height, width, channels)))  # Because we use images, we need to first set up a convolutional network and then flatten it down. Input_shape is image
     model.add(Activation('relu'))
     model.add(Conv2D(32, (4, 4), strides=(2, 2)))
     model.add(Activation('relu'))

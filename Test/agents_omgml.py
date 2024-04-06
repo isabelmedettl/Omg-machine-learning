@@ -1,7 +1,7 @@
 from rl.agents import DQNAgent  # Need to -> pip install keras-rl2
 from rl.memory import SequentialMemory
 from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
-from tensorflow.keras.models import Sequential
+from keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Convolution2D, Activation
 from tensorflow.keras.optimizers import Adam
 from gym.wrappers import FrameStack
@@ -10,7 +10,7 @@ import environment_omgml
 
 
 env = environment_omgml.Environment()
-env = FrameStack(env, 3)
+#env = FrameStack(env, 3)
 
 states = env.observation_space.shape
 actions = env.action_space.n
@@ -25,7 +25,6 @@ def build_model(states, actions):
     model.add(Dense(256, activation='relu'))
     model.add(Dense(actions, activation='linear'))
     return model
-
 
 
 model = build_model(states, actions)

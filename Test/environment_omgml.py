@@ -14,7 +14,7 @@ import pydirectinput as pdi
 import keyboard
 import gym
 from gym.spaces import Discrete, Box
-from gymnasium.envs.registration import register
+from gym.envs.registration import register
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
@@ -33,7 +33,7 @@ class Environment(gym.Env):
     def __init__(self):
         super(Environment, self).__init__()
         self.action_space = Discrete(18)
-        self.observation_space = Box(low=0, high=1, shape=(80, 44, 3), dtype=np.float32)  # Stack frames later
+        self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
 
 
         # Initialize the state variables
@@ -111,9 +111,9 @@ class Environment(gym.Env):
     def render(self):
         pass
 
-    def reset(self, seed=None, options=None):
+    def reset(self):
         # We need the following line to seed self.np_random
-        super().reset(seed=seed)
+        #super().reset()
         print("it reset")
         if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
             os.system(f"taskkill /f /im play.exe")  # Stops the game
@@ -127,7 +127,7 @@ class Environment(gym.Env):
         time.sleep(2)
 
         observation = self.update_locations()
-        # info = self.get_info()
+        #info = self.get_info()  # Depending on gym version, this needs to be added/removed from return
 
         return observation
 
