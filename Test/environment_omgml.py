@@ -6,19 +6,16 @@ import cv2
 import time
 import ctypes
 import pygetwindow as gw
-import psutil
+import subprocess
 from collections import deque
-import random
 import pydirectinput as pdi
-#import matplotlib.pyplot as plt
-import keyboard
-import gym
-from gym.spaces import Discrete, Box
+import gymnasium
+from gymnasium.spaces import Discrete, Box
 from gymnasium.envs.registration import register
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -29,7 +26,7 @@ register(
 )
 
 
-class Environment(gym.Env):
+class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
         self.action_space = Discrete(18)
@@ -70,6 +67,8 @@ class Environment(gym.Env):
                         ["a", "space"], ["s", "space"], ["d", "space"], ["w", "a", "space"], ["w", "d", "space"],
                         ["s", "a", "space"], ["s", "d", "space"], [None]]
 
+        self.game_process = None
+
 
     def step(self, action_index):
         print("took step")
@@ -80,10 +79,11 @@ class Environment(gym.Env):
         white_pixels_premove = self.white_pixels
         black_pixels_premove = self.black_pixels
 
-        if self.locations[1] is not None:
+        if not len(self.locations) <= 1:
             for x in action:
                 pdi.keyDown(x)
             observation = self.update_locations()  # This might be replaced with an actual stable delay
+            time.sleep(0.126)
             for y in action:
                 pdi.keyUp(y)
         else:
@@ -115,21 +115,31 @@ class Environment(gym.Env):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
         print("it reset")
-        if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
-            os.system(f"taskkill /f /im play.exe")  # Stops the game
+        #if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
+          #  os.system(f"taskkill /f /im play.exe")  # Stops the game
+
+        # If there's an existing game process, terminate it
+        if self.game_process is not None:
+            self.game_process.terminate()  # Gracefully terminate the process
+            self.game_process.wait()  # Wait for the game process to terminate
+            self.game_process = None  # Reset the game process variable
+
+
 
         self.step_counter = 0
         self.white_pixels = 0
         self.black_pixels = 0
         self.cached_distances_to_targets.clear()
 
-        os.startfile(game_path)
+       # os.startfile(game_path)
+        # Start a new game process
+        self.game_process = subprocess.Popen([game_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(2)
 
         observation = self.update_locations()
-        # info = self.get_info()
+        info = self.get_info()
 
-        return observation
+        return observation, info
 
     def find_pixels_by_color_vectorized(self, image_array):
         pos_i_count = 0
