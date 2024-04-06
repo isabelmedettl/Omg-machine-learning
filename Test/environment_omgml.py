@@ -30,7 +30,7 @@ class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
         self.action_space = Discrete(18)
-        self.observation_space = Box(low=0, high=1, shape=(80, 44, 3), dtype=np.float32)  # Stack frames later
+        self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
 
 
         # Initialize the state variables
@@ -83,7 +83,7 @@ class Environment(gymnasium.Env):
             for x in action:
                 pdi.keyDown(x)
             observation = self.update_locations()  # This might be replaced with an actual stable delay
-            time.sleep(0.126)
+            time.sleep(3)
             for y in action:
                 pdi.keyUp(y)
         else:
