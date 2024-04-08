@@ -316,7 +316,10 @@ class Environment(gymnasium.Env):
         if self.white_pixels > white_pixels_premove:
             reward += 10  # Reward for progress (minerals / crocodiles)
 
-        if self.black_pixels > black_pixels_premove:
+        if self.black_pixels > 400:
+            reward -= 100  # Reward for death (punishment)
+            print("Reward is -100 cus dead")
+        elif self.black_pixels > black_pixels_premove:
             reward += 50  # Reward for level up
 
         reward -= 0.1
