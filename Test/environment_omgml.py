@@ -307,7 +307,7 @@ class Environment(gymnasium.Env):
         if len(self.cached_distances_to_targets) > 0:
             for i in range(min(len(self.distances_to_targets), len(self.cached_distances_to_targets))):
                 if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
-                    reward += 1
+                    reward += (self.cached_distances_to_targets[i] - self.distances_to_targets[i]) / 5 # we are testing how much to divide
                     self.cached_distances_to_targets[i] = self.distances_to_targets[i]
         else:
             for i in range(len(self.distances_to_targets)):
