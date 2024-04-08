@@ -6,7 +6,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cff44c14-c224-44ad-85cd-0fa51908b263" name="Changes" comment="" />
+    <list default="true" id="cff44c14-c224-44ad-85cd-0fa51908b263" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../Test/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/../../Test/.idea/.name" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Test/.idea/Test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../Test/.idea/Test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Test/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../Test/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Test/environment_omgml.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../Test/environment_omgml.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,9 +28,9 @@
     <option name="majorVersion" value="2023" />
     <option name="minorVersion" value="3.4" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2eDkJtObYvIvzbzKt24iaQzfFwZ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -39,7 +44,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "DesertDigger",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -53,6 +58,7 @@
       <option name="presentableId" value="Default" />
       <updated>1711446468586</updated>
       <workItem from="1711446469993" duration="14000" />
+      <workItem from="1712581080533" duration="7000" />
     </task>
     <servers />
   </component>

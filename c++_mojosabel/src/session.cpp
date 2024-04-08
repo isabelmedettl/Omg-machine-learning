@@ -219,7 +219,7 @@ namespace mojosabel {
         int levelsSliderHeight = (SCREEN_HEIGHT * currentLevel) / MAX_LEVELS;
 
         // Draw pickups slider right side
-        const SDL_Rect& pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH + 1, SCREEN_HEIGHT, SLIDER_WIDTH, -pickupsSliderHeight};
+        const SDL_Rect& pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH + 2, SCREEN_HEIGHT, SLIDER_WIDTH, -pickupsSliderHeight};
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
         SDL_RenderFillRect(renderer, &pickupsSliderRect);
         
