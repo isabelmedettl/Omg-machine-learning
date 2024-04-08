@@ -30,7 +30,7 @@ namespace mojosabel {
         {
             player->setPosition(level->generateSpawnPosition());
         }
-        generateGameObjects<DoorToNextLevel>(level, 1, "images/Door.png", true);
+        generateGameObjects<DoorToNextLevel>(level, 1, "images/WoodDoor.png", true);
     }
 
     void World::drawCurrentLevel()
