@@ -11,8 +11,9 @@ class GTurtle : public Player
     private:
         int iFrameCounter = 60;
         bool canShoot;
-        Ui_label* healthBar;
         bool isAlive;
+        int shootCoolDown = 6;
+        int shootCounter = 0;
     public:
         GTurtle(int x, int y, int startHealth);
         void adjustHealth(int changeHealth);

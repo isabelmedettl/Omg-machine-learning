@@ -13,7 +13,7 @@ private:
     Player* playerPtr;
 public:
     
-    GCrocodile(int x, int y) : Enemy(x, y) { setHealth(20); }
+    GCrocodile(int x, int y) : Enemy(x, y) { setHealth(5); }
     void update();
     void moveToPlayer();
     void checkHealth();

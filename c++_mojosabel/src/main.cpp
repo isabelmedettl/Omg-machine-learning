@@ -39,7 +39,8 @@ int main(int argc, char* argv[])
 
     UI = ses.getRootCanvas();
 
-    ses.createNewWorld(2, 48, 5, 4);
+    //ses.createNewWorld(2, 48, 5, 4);
+    ses.createNewWorld(2, 45, 5, 4);
     ses.getWorld()->newLevel("images/WaterTile.png", "images/WaterTileWithLilyPad.png");
 
     Vector2 spawnPos = ses.getWorld()->getCurrentLevel()->generateSpawnPosition();
@@ -49,7 +50,7 @@ int main(int argc, char* argv[])
     player->loadTexture(constants::gResPath + "images/Turtle.png");
     ses.add(player);
 
-    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), 5, "images/Crocodile.png", true );
+    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), PROGRESSION_INCREMENT, "images/Crocodile.png", true );
 
     ses.addLoadLevelFunc(nextLevelFunc);
     ses.addLoadLevelFunc(enemiesToNextLevel);

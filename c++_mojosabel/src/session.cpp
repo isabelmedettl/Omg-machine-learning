@@ -211,6 +211,18 @@ namespace mojosabel {
         SDL_RenderFillRect(renderer, &levelsSliderRect);
     }
 
+    void Session::renderBlackScreen()
+    {
+        SDL_Renderer* renderer = sys.getRen();
+        if (world == nullptr || renderer == nullptr)
+        {
+            return;
+        }
+        const SDL_Rect& blackRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // White color
+        SDL_RenderFillRect(renderer, &blackRect);
+    }
+
     void Session::createNewWorld(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
     {
         world = new World(smoothMap, fillPercent, smoothUnwalkableLimit, smoothUnwalkableLimit);
@@ -296,6 +308,11 @@ namespace mojosabel {
             // Ritar sprite objekt
             rootCanvas->drawSprites();
             renderSliders(sys.getRen());
+
+            if (bRenderBlackScreen)
+            {
+                renderBlackScreen();
+            }
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
 

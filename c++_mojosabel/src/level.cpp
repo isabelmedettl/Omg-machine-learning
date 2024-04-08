@@ -43,7 +43,7 @@ namespace mojosabel{
     }
 
     bool Level::isTileWall(int x, int y) {
-        if ((x/TILE_SIZE >= MAP_WIDTH || y/TILE_SIZE >= MAP_HEIGHT || x/TILE_SIZE < 0 || y/TILE_SIZE < 0)){  
+        if ((x/TILE_SIZE >= MAP_WIDTH - 1 || y > SCREEN_HEIGHT || x/TILE_SIZE < 1 || y < 1)){  
             return true;
         } else if (tilemap(x/TILE_SIZE, y/TILE_SIZE)->getTopLayer()->tag == "Wall"){
             return true;

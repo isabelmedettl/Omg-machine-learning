@@ -58,6 +58,8 @@ namespace mojosabel {
         Entity* findEntity(std::string name);
         void renderSliders(SDL_Renderer* renderer);
         int FPS = 60;
+        void renderBlackScreen();
+        bool bRenderBlackScreen = false;
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med

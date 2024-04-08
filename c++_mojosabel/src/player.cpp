@@ -30,16 +30,11 @@ namespace mojosabel {
 
     void Player::mouseDown(int x, int y)
     {
-        fire(x, y);
+        //fire(x, y);
     }
 
     void Player::fire(int x, int y)
     {
-        Bullet *bullet = new Bullet(rect.x, rect.y, 0, 0, 0, "Bullet", 30, x, y);
-        bullet->loadTexture(constants::gResPath + "images/Bullet.png");
-        bullet->resizeToImage();
-        bullet->setCollision(true);
-        instantiate(bullet);
-        hasColliders();
+        
     }
 }
