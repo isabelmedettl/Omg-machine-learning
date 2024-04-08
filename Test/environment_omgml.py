@@ -19,7 +19,7 @@ pdi.PAUSE = 0.0001
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -137,10 +137,10 @@ class Environment(gymnasium.Env):
 
         # If there's an existing game process, terminate it
         if self.game_process is not None:
-            self.game_process.terminate()  # Gracefully terminate the process
-            self.game_process.wait()  # Wait for the game process to terminate
+            subprocess.call(['taskkill', '/F', '/T', '/PID', str(self.game_process.pid)])
+            #self.game_process.terminate()  # Gracefully terminate the process
+            #self.game_process.wait()  # Wait for the game process to terminate
             self.game_process = None  # Reset the game process variable
-
 
 
         self.step_counter = 0
