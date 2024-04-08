@@ -26,7 +26,10 @@ void nextLevelFunc()
 
 void enemiesToNextLevel()
 {
-    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), (ses.getWorld()->getCurrentLevelIndex() * 4) + 5, "images/Crocodile.png", true);
+    int newEnemiesRequired = ses.getWorld()->getCurrentLevelIndex() + PROGRESSION_INCREMENT;
+    generateGameObjects<GCrocodile>(ses.getWorld()->getCurrentLevel(), newEnemiesRequired, "images/Crocodile.png", true);
+    ses.getWorld()->setMaxProgression(newEnemiesRequired);
+    ses.getWorld()->currentProgressionValue = 0;
 }
 
 int main(int argc, char* argv[]) 
@@ -35,8 +38,6 @@ int main(int argc, char* argv[])
     std::cout << "***main***" << std::endl;
 
     UI = ses.getRootCanvas();
-    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), 0, 400, 100, "WOW SEA ADVENTURE 4000"));
-    UI->addUiSprite(Ui_label::getInstance((SCREEN_WIDTH/2 -200), SCREEN_HEIGHT-100, 400, 100, "KILL ALL CROCODILES"));
 
     ses.createNewWorld(2, 48, 5, 4);
     ses.getWorld()->newLevel("images/WaterTile.png", "images/WaterTileWithLilyPad.png");

@@ -13,8 +13,26 @@ namespace constants
     #define MAP_WIDTH 40
     #define MAP_HEIGHT 22
 
+    #define PROGRESSION_INCREMENT 3
+    #define SLIDER_WIDTH 32
+    #define MAX_LEVELS 10
+
+    #define Y_MIN_OFFSET 0 
+    #define Y_MAX_OFFSET 22
+    #define X_MIN_OFFSET 1 
+    #define X_MAX_OFFSET 39
+
+    const std::string playerTag = "Player";
+    const std::string shellBulletTag = "Bullet";
+    const std::string enemyTag = "Enemy";
+
+
     //gResPath-contains the relative path to your resources.
 	const std::string gResPath = "resources/";
+
+    //saving bpm and images
+	const std::string gSaveImagePath = "saved_images/";
+    const std::string saveFileName = "screenshot_";
 
     //keyboard keys enums
     #define KEY_A 4

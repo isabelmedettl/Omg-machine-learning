@@ -30,11 +30,15 @@ namespace mojosabel {
         void sortEntitiesByLayer();
 
 
-        /* === Saving and creating files */
-        void saveRenderedImage();
-        void compareSurfaces();
+        // new
+        int currentLevel = 0;
+        int currentProgressionMaxValue = 3;
 
-        int saveRenderedImageCap = 100;
+        SDL_Surface* cachedSurface = nullptr;
+
+        SDL_Texture* progressionSliderImage = nullptr;
+        SDL_Texture* levelSliderImage = nullptr;
+
 
     public:
         Session();
@@ -52,6 +56,8 @@ namespace mojosabel {
         ~Session();
         Canvas* getRootCanvas() {return rootCanvas;};
         Entity* findEntity(std::string name);
+        void renderSliders(SDL_Renderer* renderer);
+        int FPS = 60;
     };
 
     // struct collision som innehåller en pointer/namnet till det objektet kolliderar med
