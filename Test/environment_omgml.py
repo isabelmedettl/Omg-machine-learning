@@ -17,13 +17,14 @@ import mss.tools
 pdi.PAUSE = 0.0001
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
+# Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 60
+fps = 120
 
 register(
     id="Mojosabel-v0",
@@ -109,7 +110,7 @@ class Environment(gymnasium.Env):
 
         reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
 
-        if reward >= 100:
+        if reward >= 50:
             done = True
 
         info = self.get_info()
@@ -313,12 +314,12 @@ class Environment(gymnasium.Env):
                 self.cached_distances_to_targets.append(self.distances_to_targets[i])
 
         if self.white_pixels > white_pixels_premove:
-            reward += 25  # Reward for progress (minerals / crocodiles)
+            reward += 10  # Reward for progress (minerals / crocodiles)
 
         if self.black_pixels > black_pixels_premove:
-            reward += 100  # Reward for level up
+            reward += 50  # Reward for level up
 
-        reward -= 1
+        reward -= 0.1
 
         return reward
 

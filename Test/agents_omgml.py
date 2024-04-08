@@ -28,7 +28,7 @@ epsilon_interval = (
 )  # Rate at which to reduce chance of random action being taken
 batch_size = 8  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 3  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 5  # Limit training episodes, will run until solved if smaller than 1
 
 def create_q_model():
     # Network defined by the Deepmind paper
@@ -126,7 +126,7 @@ while True:
         state_next = np.array(state_next)
 
         episode_reward += reward
-        print("Episode reward: ", episode_reward)
+        print("Episode reward: ", int(episode_reward))
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -216,7 +216,7 @@ while True:
         max_episodes > 0 and episode_count >= max_episodes
     ):  # Maximum number of episodes reached
         print("Stopped at episode {}!".format(episode_count))
-        model.save(f'model_from{datetime.now()}')
+        model.save(f'model_from{datetime.now().strftime("%Y%m%d_%H%M%S")}.keras')
         break
 
 
