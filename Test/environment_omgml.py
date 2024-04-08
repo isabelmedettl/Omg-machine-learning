@@ -307,7 +307,7 @@ class Environment(gymnasium.Env):
         if len(self.cached_distances_to_targets) > 0:
             for i in range(min(len(self.distances_to_targets), len(self.cached_distances_to_targets))):
                 if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
-                    reward += 1
+                    reward += (self.cached_distances_to_targets[i] - self.distances_to_targets[i]) / 5 # we are testing how much to divide
                     self.cached_distances_to_targets[i] = self.distances_to_targets[i]
         else:
             for i in range(len(self.distances_to_targets)):
@@ -316,7 +316,10 @@ class Environment(gymnasium.Env):
         if self.white_pixels > white_pixels_premove:
             reward += 10  # Reward for progress (minerals / crocodiles)
 
-        if self.black_pixels > black_pixels_premove:
+        if self.black_pixels > 400:
+            reward -= 100  # Reward for death (punishment)
+            print("Reward is -100 cus dead")
+        elif self.black_pixels > black_pixels_premove:
             reward += 50  # Reward for level up
 
         reward -= 0.1
