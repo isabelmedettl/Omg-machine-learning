@@ -10,13 +10,13 @@ namespace mojosabel{
     {
         for(int i = 0; i < amount; i++)
         {
-        Vector2 spawnPos = level->generateSpawnPosition();
-        int spawnX = spawnPos.x;
-        int spawnY = spawnPos.y;
-        T* object = new T(spawnX, spawnY);
-        object->loadTexture(constants::gResPath + texPath);
-        object->setCollision(collision);
-        ses.add(object);
+            Vector2 spawnPos = level->generateSpawnPosition();
+            int spawnX = spawnPos.x;
+            int spawnY = spawnPos.y;
+            T* object = new T(spawnX, spawnY);
+            object->loadTexture(constants::gResPath + texPath);
+            object->setCollision(collision);
+            ses.add(object);
         }
     }
 }
