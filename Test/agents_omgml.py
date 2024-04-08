@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 import environment_omgml
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -98,6 +99,7 @@ while True:
     state = np.array(observation)
     #state = observation
     episode_reward = 0
+    step_counter = 0
 
 # define max_steps_per_episode
     for timestep in range(1, max_steps_per_episode):
@@ -127,6 +129,8 @@ while True:
 
         episode_reward += reward
         print("Episode reward: ", int(episode_reward))
+        print("Episode count: ", episode_count, " of ", max_episodes)
+        print("Steps: ", step_counter, " of ", max_steps_per_episode)
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -217,6 +221,11 @@ while True:
     ):  # Maximum number of episodes reached
         print("Stopped at episode {}!".format(episode_count))
         model.save(f'model_from{datetime.now().strftime("%Y%m%d_%H%M%S")}.keras')
+        plt.plot(range(len(episode_reward_history)), episode_reward_history)
+        plt.title("Rewards per episode")
+        plt.xlabel("Episode")
+        plt.ylabel("Reward")
+        plt.show()
         break
 
 
