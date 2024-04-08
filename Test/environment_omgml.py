@@ -12,13 +12,18 @@ import pydirectinput as pdi
 import gymnasium
 from gymnasium.spaces import Discrete, Box
 from gymnasium.envs.registration import register
+import mss.tools
+
+pdi.PAUSE = 0.0001
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
+
+fps = 60
 
 register(
     id="Mojosabel-v0",
@@ -41,8 +46,8 @@ class Environment(gymnasium.Env):
         self.agent_location = (0, 0)
         self.white_pixels = 0
         self.black_pixels = 0
-        self.blue_min = 0.854
-        self.blue_max = 0.89
+        self.blue_min = 0.721
+        self.blue_max = 0.73
         self.agent_min = 0.28
         self.agent_max = 0.51
         self.step_counter = 0
@@ -57,9 +62,8 @@ class Environment(gymnasium.Env):
         self.game_w = 1280
         self.game_h = 720
         self.whiteborder_h = 16
-        self.screenshot_boundaries = (
-        int(self.screen_wc - self.game_w / 2), int(self.screen_hc - self.game_h / 2), self.game_w,
-        self.game_h - self.whiteborder_h)
+        self.screenshot_boundaries = {"left":int(self.screen_wc - self.game_w / 2), "top":int(self.screen_hc - self.game_h / 2), "width":self.game_w, "height":self.game_h - self.whiteborder_h}
+
 
         # Define the actions as a class attribute
         self.actions = [["w"], ["a"], ["s"], ["d"], ["space"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"],
@@ -71,7 +75,9 @@ class Environment(gymnasium.Env):
 
 
     def step(self, action_index):
-        print("took step")
+        global fps
+
+        #print("took step", self.actions[action_index])
         action = self.actions[action_index]
         if len(self.distances_to_targets) > 0:
             self.distances_to_targets.clear()
@@ -79,12 +85,19 @@ class Environment(gymnasium.Env):
         white_pixels_premove = self.white_pixels
         black_pixels_premove = self.black_pixels
 
+        #print("locs", self.locations)
+
+        prepretime = time.time()
+
+        input_frames = 12
+
         if not len(self.locations) <= 1:
-            for x in action:
+            for x in self.actions[action_index]:
                 pdi.keyDown(x)
+            pretime = time.time()
             observation = self.update_locations()  # This might be replaced with an actual stable delay
-            time.sleep(3)
-            for y in action:
+            time.sleep(max(0.0, input_frames/fps-(time.time() - pretime)))
+            for y in self.actions[action_index]:
                 pdi.keyUp(y)
         else:
             observation = self.update_locations()
@@ -92,6 +105,7 @@ class Environment(gymnasium.Env):
         for loc in self.pick_up_locations:
             self.distances_to_targets.append(self.calculate_distance(loc, self.agent_location))
         self.distances_to_targets.sort(reverse=True)
+
 
         reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
 
@@ -105,6 +119,8 @@ class Environment(gymnasium.Env):
         self.step_counter += 1
         if self.step_counter >= 2000:
             truncated = True
+
+        print("Minerals: ", self.locations[0], "Agent: ", self.locations[1])
 
         return observation, reward, terminated, truncated, info
 
@@ -174,6 +190,61 @@ class Environment(gymnasium.Env):
 
     def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
         # Capture the screenshot
+        with mss.mss() as sct:
+            image = sct.grab(self.screenshot_boundaries)
+
+        # Convert to NumPy array and to BGR color space
+        image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
+
+        # Resize early to reduce the amount of data processed in subsequent steps
+        # image = cv2.resize(image, input_shape)
+
+        image = Image.fromarray(image)
+
+        # Resize and convert to grayscale
+        image = image.resize(input_shape)
+
+        # Create a mask for the blue channel with a threshold
+        # ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
+
+        # Prepare a 3-channel mask for bitwise operations
+        # mask3 = np.zeros_like(image)
+        # mask3[:, :, 0] = mask  # Apply mask to the blue channel
+
+        # Extract the blue region using bitwise_and
+        # blue_region = cv2.bitwise_and(image, mask3)
+
+        # Convert the original image to grayscale and then back to BGR
+        # gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+
+        # Extract the non-blue region from the grayscale image
+        # non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
+
+        # Combine the blue and grayscale regions
+        # combined_image = blue_region + non_blue_region
+
+        # Convert back to NumPy array and save
+        processed_image = np.array(image)
+        # cv2.imwrite(output_filename_screenshot, processed_image)
+
+        # Normalize the processed image
+        processed_image_normalized = processed_image / 255.0
+
+        return processed_image_normalized
+
+    '''def OLD_stack_frames(self, processed_image_normalized, output_filename_stacks):
+        self.frame_queue.append(processed_image_normalized)
+
+        # Stack frames
+        if len(self.frame_queue) == self.WINDOW_LENGTH:
+            stacked_frames = np.stack(self.frame_queue, axis=-1)
+            np.save(output_filename_stacks, stacked_frames)
+
+        return stacked_frames'''
+
+    '''    def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
+        # Capture the screenshot
         image = pyautogui.screenshot(region=self.screenshot_boundaries)
 
         image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
@@ -210,37 +281,31 @@ class Environment(gymnasium.Env):
 
         processed_image_normalized = np.array(image) / 255.0
 
-        return processed_image_normalized
-
-    '''def OLD_stack_frames(self, processed_image_normalized, output_filename_stacks):
-        self.frame_queue.append(processed_image_normalized)
-
-        # Stack frames
-        if len(self.frame_queue) == self.WINDOW_LENGTH:
-            stacked_frames = np.stack(self.frame_queue, axis=-1)
-            np.save(output_filename_stacks, stacked_frames)
-
-        return stacked_frames'''
+        return processed_image_normalized'''
 
     def update_locations(self):
         # Process the screenshot and save
         curr_processed_image = self.process_screenshot("screenshot00.png")
-        locations = self.find_pixels_by_color_vectorized(curr_processed_image)
-        self.pick_up_locations = locations[0]
-        self.agent_location = locations[1]
+        self.locations = self.find_pixels_by_color_vectorized(curr_processed_image)
+        self.pick_up_locations = self.locations[0]
+        self.agent_location = self.locations[1]
 
         return curr_processed_image
 
     def calculate_distance(self, point1, point2):
+        if point2 is None or len(point2) == 0 or point2[0] is None:
+            return 100  # Returns big distance to make sure we no say good when no good
         return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
 
     def calculate_reward(self, white_pixels_premove, black_pixels_premove):
+
+        # print(self.cached_distances_to_targets, self.distances_to_targets)
+
         reward = 0
 
         if len(self.cached_distances_to_targets) > 0:
-            for i in range(len(self.distances_to_targets)):
+            for i in range(min(len(self.distances_to_targets), len(self.cached_distances_to_targets))):
                 if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
-                    print("Should get reward")
                     reward += 1
                     self.cached_distances_to_targets[i] = self.distances_to_targets[i]
         else:

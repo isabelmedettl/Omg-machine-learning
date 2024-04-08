@@ -2,6 +2,8 @@
 #include "FloorTile.h"
 #include "WallTile.h"
 #include "Session.h"
+#include <iostream>
+
 
 namespace mojosabel{
     
@@ -21,7 +23,8 @@ namespace mojosabel{
         if(tag == "Floor")
         {
             tilemap(x, y)->add(new FloorTile(x * TILE_SIZE, y * TILE_SIZE, walkableTexturePath));
-        } else if(tag == "Wall")
+        } 
+        else if(tag == "Wall")
         {
             WallTile* wallTile = new WallTile(x * TILE_SIZE, y * TILE_SIZE, unwalkableTexturePath);
             tilemap(x, y)->add(wallTile);
@@ -29,25 +32,32 @@ namespace mojosabel{
         }
     }
 
-    void Level::checkForFloor(){
+    void Level::checkForFloor()
+    {
         for(int x = 0; x < MAP_WIDTH; x++)
         {
             for(int y = 0; y < MAP_HEIGHT; y++)
             {
-                if(tilemap(x, y)->getTopLayer()->tag == "Floor"){
-                    
+                if(tilemap(x, y)->getTopLayer()->tag == "Floor")
+                {
                     walkableTiles.push_back(Vector2(x * TILE_SIZE, y * TILE_SIZE));
                 }
             }
         }
     }
 
-    bool Level::isTileWall(int x, int y) {
-        if ((x/TILE_SIZE >= MAP_WIDTH || y/TILE_SIZE >= MAP_HEIGHT || x/TILE_SIZE < 0 || y/TILE_SIZE < 0)){  
+    bool Level::isTileWall(int x, int y) 
+    {
+        // höger, ner, vänster, upp
+        if ((x/TILE_SIZE >= MAP_WIDTH - 1 || y > SCREEN_HEIGHT || x/TILE_SIZE < 1 || y < 1)){  
             return true;
-        } else if (tilemap(x/TILE_SIZE, y/TILE_SIZE)->getTopLayer()->tag == "Wall"){
+        } 
+        else if (tilemap(x/TILE_SIZE, y/TILE_SIZE)->getTopLayer()->tag == "Wall")
+        {
             return true;
-        } else {
+        } 
+        else 
+        {
             return false;
         }
     }

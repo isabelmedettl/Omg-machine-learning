@@ -9,6 +9,7 @@ import cv2
 from collections import deque
 import ctypes
 import keyboard
+import mss.tools
 
 
 # Function to capture and process the screenshot
@@ -18,17 +19,17 @@ screen_hc = int(user32.GetSystemMetrics(1) / 2)
 game_w = 1280
 game_h = 720
 whiteborder_h = 16
-screenshot_boundaries = (int(screen_wc - game_w / 2), int(screen_hc - game_h / 2), game_w, game_h - whiteborder_h)
+screenshot_boundaries = {"left":int(screen_wc - game_w / 2), "top":int(screen_hc - game_h / 2), "width":game_w, "height":game_h - whiteborder_h}
 
 WINDOW_LENGTH = 4  # Number of frames to stack
 frame_queue = deque(maxlen=WINDOW_LENGTH)  # Queue to hold the last N frames
 
 
-def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 45)):
+def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
     # Capture the screenshot
-    image = pyautogui.screenshot(region=screenshot_boundaries)
+    image = mss.mss().grab(screenshot_boundaries)
 
-    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
 
     # Create a mask for the blue channel with a threshold
     ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
@@ -62,15 +63,9 @@ def process_and_stack_frames(output_filename_stacks, output_filename_screenshot,
 
     processed_image_normalized = np.array(image) / 255.0
 
-    # Add the processed frame to the queue
-    frame_queue.append(processed_image_normalized)
-
-    # Stack frames
-    if len(frame_queue) == WINDOW_LENGTH:
-        stacked_frames = np.stack(frame_queue, axis=-1)
-        np.save(output_filename_stacks, stacked_frames)
-
     return processed_image_normalized
+
+
 
 
 try:

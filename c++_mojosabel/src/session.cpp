@@ -1,28 +1,24 @@
 #include <iostream>
 #include <algorithm>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_surface.h>
 #include "Session.h"
 #include "System.h"
 #include "Collision.h"
+#include "JosPlayer.h"
+
 
 namespace mojosabel {
-
-    void Session::saveRenderedImage()
-    {
-        std::cout << "printy" << std::endl;
-
-    }
-
-    void Session::compareSurfaces()
-    {
-        std::cout << "compary" << std::endl;
-    }
-
+   
     Session::Session()
     {
         std::cout << "Hej det funkar, session" << std::endl;
         rootCanvas = new Canvas();
-        //world = new World();
+
+       // progressionSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/WhiteSquare.png").c_str() );
+		//levelSliderImage = IMG_LoadTexture(sys.getRen(), (constants::gResPath + "images/BlackSquare.png").c_str() );
+
     }
 
     void Session::add(Entity* entityToAdd)
@@ -39,7 +35,11 @@ namespace mojosabel {
     {
         if (event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
-            sys.keyboard[event->keysym.scancode] = 0;
+            if (sys.keyboard[event->keysym.scancode] != 0)
+            {
+                sys.keyboard[event->keysym.scancode] = 0;
+            }
+            //sys.keyboard[event->keysym.scancode] = 0;
         }
     }
 
@@ -47,7 +47,16 @@ namespace mojosabel {
     {
         if (/*event->repeat == 0 && */ event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
-            sys.keyboard[event->keysym.scancode] = 1;
+            if (sys.keyboard[event->keysym.scancode] != 1)
+            {
+                sys.keyboard[event->keysym.scancode] = 1;
+
+                if (event->keysym.scancode == KEY_SPACE)
+                {
+                    
+                }
+            }
+            //sys.keyboard[event->keysym.scancode] = 1;
         }
     }
 
@@ -55,7 +64,10 @@ namespace mojosabel {
     {
         long wait, frameTime;
 
-        wait = 16 + *remainder; 
+        //1000 milliseconds / 60 frames = 16 ms
+        int roundFPS = 1000 / FPS;
+
+        wait = roundFPS + *remainder; 
 
         *remainder -= (int)*remainder;
 
@@ -107,6 +119,10 @@ namespace mojosabel {
                             if (checkColliders(c.rect, entity->getColliders())) // om någon av colliders kolliderar: skapa en collision och kör on collision i objektet vi kollar
                             {
                                 Collision<Entity> col = Collision(entity, entity->tag);
+                                if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                                {
+                                    world->currentProgressionValue++;
+                                }
                                 entityToCheck->onCollision(col);
                             } 
                        }
@@ -116,6 +132,10 @@ namespace mojosabel {
                         if (checkColliders(*entityToCheck->getRect(), entity->getColliders())) 
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                            {
+                                world->currentProgressionValue++;
+                            }
                             entityToCheck->onCollision(col);
                         }
                     }
@@ -124,14 +144,24 @@ namespace mojosabel {
                         if (checkColliders(*entity->getRect(), entityToCheck->getColliders()))
                         {
                             Collision<Entity> col = Collision(entity, entity->tag);
+                            if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                            {
+                                world->currentProgressionValue++;
+                            }
+
                             entityToCheck->onCollision(col);
                         }
                     }
                     else 
                     {
                         Collision<Entity> col = Collision(entity, entity->tag);
+                        if (col.tag == constants::pickUpTag && entityToCheck->tag == constants::playerTag && world != nullptr)
+                        {
+                            world->currentProgressionValue++;
+                        }
                         entityToCheck->onCollision(col);
                     }
+                    
                 }
             }
         }
@@ -175,6 +205,30 @@ namespace mojosabel {
         return true;
     }
 
+   
+
+    void Session::renderSliders(SDL_Renderer* renderer)
+    {
+        if (world == nullptr)
+        {
+            return;
+        }
+        currentProgressionMaxValue = world->getMaxProgression();
+        currentLevel = world->getCurrentLevelIndex();
+        int pickupsSliderHeight = (SCREEN_HEIGHT * world->currentProgressionValue) / currentProgressionMaxValue;
+        int levelsSliderHeight = (SCREEN_HEIGHT * currentLevel) / MAX_LEVELS;
+
+        // Draw pickups slider right side
+        const SDL_Rect& pickupsSliderRect = {SCREEN_WIDTH - SLIDER_WIDTH + 1, SCREEN_HEIGHT, SLIDER_WIDTH, -pickupsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
+        SDL_RenderFillRect(renderer, &pickupsSliderRect);
+        
+        // Draw levels slider left side
+        const SDL_Rect& levelsSliderRect = {0, SCREEN_HEIGHT, SLIDER_WIDTH, -levelsSliderHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // White color
+        SDL_RenderFillRect(renderer, &levelsSliderRect);
+    }
+
     void Session::createNewWorld(int smoothMap, int fillPercent, int smoothWalkableLimit, int smoothUnwalkableLimit)
     {
         world = new World(smoothMap, fillPercent, smoothUnwalkableLimit, smoothUnwalkableLimit);
@@ -186,7 +240,7 @@ namespace mojosabel {
         renderTime = SDL_GetTicks();
         remainder = 0;
         bool quit = false;
-        int saveImageCounter = 0;
+
         while(!quit)
         {
             SDL_Event event;
@@ -220,7 +274,6 @@ namespace mojosabel {
                 }
             }
 
-            
             SDL_SetRenderDrawColor(sys.getRen(), 255, 255, 255, 255);
             SDL_RenderClear(sys.getRen());
             world->drawCurrentLevel();
@@ -230,7 +283,6 @@ namespace mojosabel {
             {
                 e->sneakyUpdate();
                 checkAllCollisions(e);
-                
             }
  
             for (Entity* e : addedEntities)
@@ -239,7 +291,6 @@ namespace mojosabel {
                 sortEntitiesByLayer();
             }
             addedEntities.clear();
-
 
             for (Entity* e : removedEntities)
             {
@@ -260,16 +311,15 @@ namespace mojosabel {
           
             // Ritar sprite objekt
             rootCanvas->drawSprites();
+            renderSliders(sys.getRen());
             SDL_RenderPresent(sys.getRen());
             capFrameRate(&renderTime, &remainder);
-
-            if (saveImageCounter <= saveRenderedImageCap)
+            
+            if (world->getCurrentLevelIndex() == 10)
             {
-                saveRenderedImage();
-                saveImageCounter++;
-
+                break;
             }
-
+            
             if(loadNextLevel)
             {
                 for(loadLevelFunc f : funcsOnLoadLevel)
@@ -277,9 +327,7 @@ namespace mojosabel {
                     f();
                 }
                 loadNextLevel = false;
-            }
-
-            
+            } 
         }
     }
 
@@ -317,6 +365,7 @@ namespace mojosabel {
     {
         clearEntities();
         funcsOnLoadLevel.clear();
+       // SDL_FreeSurface(cachedSurface);
         delete world;
         delete rootCanvas;
     }

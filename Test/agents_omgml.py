@@ -7,6 +7,7 @@ from gymnasium.wrappers import FrameStack
 import numpy as np
 import tensorflow as tf
 import environment_omgml
+from datetime import datetime
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -16,9 +17,9 @@ actions = env.action_space
 
 num_actions = 18
 
-# Configuration paramaters for the whole setup
+# Configuration parameters for the whole setup
 seed = 42
-gamma = 0.99  # Discount factor for past rewards
+gamma = 0.99  # Discount factor for pasta rewards
 epsilon = 1.0  # Epsilon greedy parameter
 epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
@@ -125,6 +126,7 @@ while True:
         state_next = np.array(state_next)
 
         episode_reward += reward
+        print("Episode reward: ", episode_reward)
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -184,7 +186,7 @@ while True:
             model_target.set_weights(model.get_weights())
             # Log details
             template = "running reward: {:.2f} at episode {}, frame count {}"
-            print(template.format(running_reward, episode_count, frame_count))
+            print(template.format(running_reward, episode_count, step_counter))
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
@@ -207,12 +209,14 @@ while True:
 
     if running_reward > running_reward_max:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
+        model.save(f'model_from{datetime.now()}')
         break
 
     if (
         max_episodes > 0 and episode_count >= max_episodes
     ):  # Maximum number of episodes reached
         print("Stopped at episode {}!".format(episode_count))
+        model.save(f'model_from{datetime.now()}')
         break
 
 

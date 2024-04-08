@@ -10,6 +10,7 @@ private:
     int crystalsRequired;
 public:
     JosPlayer(int x, int y);
+    int getCrystalsRequired() { return crystalsRequired; }
     void fire(int x, int y);
     bool levelCompleted();
     void onCollision(Collision<Entity> collision);
