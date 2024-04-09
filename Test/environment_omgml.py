@@ -12,7 +12,9 @@ import pydirectinput as pdi
 import gymnasium
 from gymnasium.spaces import Discrete, Box
 from gymnasium.envs.registration import register
+from contextlib import contextmanager
 import mss.tools
+import logging
 
 pdi.PAUSE = 0.0001
 pdi.FAILSAFE = False
@@ -32,7 +34,9 @@ register(
     entry_point="Test.environment_omgml:Environment"  # This path could be wrong
 )
 
-
+# Setup basic logging configuration
+logging.basicConfig(level=logging.DEBUG, filename='application.log',
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
@@ -74,6 +78,9 @@ class Environment(gymnasium.Env):
                         ["s", "a", "space"], ["s", "d", "space"], [None]]
 
         self.game_process = None
+
+
+
 
 
     def step(self, action_index):
@@ -190,9 +197,27 @@ class Environment(gymnasium.Env):
 
         return [positions, agent_position]
 
+    @contextmanager
+    def managed_mss(self):
+        sct = mss.mss()
+        try:
+            yield sct
+        except Exception as e:
+            logging.error(f"An error occurred with mss: {e}", exc_info=True)
+            # Re-raise the exception after logging
+            raise
+        finally:
+            try:
+                sct.close()
+                logging.debug("mss instance closed successfully.")
+            except Exception as e_close:
+                logging.error(f"An error occurred while closing mss: {e_close}", exc_info=True)
+
+
     def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
         # Capture the screenshot
-        with mss.mss() as sct:
+
+        with self.managed_mss() as sct:
             image = sct.grab(self.screenshot_boundaries)
 
         # Convert to NumPy array and to BGR color space
@@ -202,6 +227,7 @@ class Environment(gymnasium.Env):
         # image = cv2.resize(image, input_shape)
 
         image = Image.fromarray(image)
+        logging.debug("mss instance closed successfully.")
 
         # Resize and convert to grayscale
         image = image.resize(input_shape)
