@@ -15,6 +15,7 @@ from gymnasium.envs.registration import register
 from contextlib import contextmanager
 import mss.tools
 import logging
+from datetime import datetime
 
 pdi.PAUSE = 0.0001
 pdi.FAILSAFE = False
@@ -22,7 +23,7 @@ pdi.FAILSAFE = False
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -209,7 +210,7 @@ class Environment(gymnasium.Env):
         finally:
             try:
                 sct.close()
-                logging.debug("mss instance closed successfully.")
+                #logging.debug("mss instance closed successfully.")
             except Exception as e_close:
                 logging.error(f"An error occurred while closing mss: {e_close}", exc_info=True)
 
@@ -254,7 +255,10 @@ class Environment(gymnasium.Env):
 
         # Convert back to NumPy array and save
         processed_image = np.array(image)
-        # cv2.imwrite(output_filename_screenshot, processed_image)
+        if self.locations is not None:
+            if len(self.locations) > 0:
+                if len(self.locations[0]) > 13:
+                    cv2.imwrite(f'screenshot{datetime.now().strftime("%Y%m%d_%H%M%S")}.png', processed_image)
 
         # Normalize the processed image
         processed_image_normalized = processed_image / 255.0
