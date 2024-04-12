@@ -29,7 +29,7 @@ epsilon_interval = (
 )  # Rate at which to reduce chance of random action being taken
 batch_size = 8  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 500  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 500 # Limit training episodes, will run until solved if smaller than 1
 
 def create_q_model():
     # Network defined by the Deepmind paper
@@ -46,6 +46,10 @@ def create_q_model():
     )
 
 
+# Set up TensorBoard logging
+log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+summary_writer = tf.summary.create_file_writer(log_dir)
 
 
 #model = create_q_model()
@@ -63,7 +67,7 @@ model.summary()
 
 # In the Deepmind paper they use RMSProp however then Adam optimizer
 # improves training time
-optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
+optimizer = keras.optimizers.Adam(learning_rate=0.001, clipnorm=1.0)
 
 # Experience replay buffers
 action_history = []
@@ -72,16 +76,16 @@ state_next_history = []
 rewards_history = []
 done_history = []
 episode_reward_history = []
-episode_reward_history_max = 100
+episode_reward_history_max = max_episodes * 2
 running_reward = 0
 running_reward_max = 100
 episode_count = 0
 frame_count = 0
 step_counter = 0
 # Number of frames to take random action and observe output
-epsilon_random_steps = 50
+epsilon_random_steps = max_steps_per_episode * 5
 # Number of frames for exploration
-epsilon_greedy_steps = 100
+epsilon_greedy_steps = epsilon_random_steps * 2
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 10000
@@ -213,6 +217,13 @@ while True:
 
     model.save("episodic_model.keras")
 
+    with summary_writer.as_default():
+        tf.summary.scalar('Episode Reward', episode_reward, step=episode_count)
+        tf.summary.scalar('Running Reward', running_reward, step=episode_count)
+        tf.summary.scalar('Loss', loss, step=episode_count)
+        tf.summary.scalar('Epsilon', epsilon, step=episode_count)
+        summary_writer.flush()
+
     '''if running_reward > running_reward_max:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         model.save(f'model_from{datetime.now().strftime("%Y%m%d_%H%M%S")}.keras')
@@ -227,8 +238,6 @@ while True:
         plt.ylabel("Reward")
         plt.show()
         break
-
-
 
 # OLD STUFF
 '''

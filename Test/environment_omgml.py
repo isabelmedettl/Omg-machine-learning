@@ -28,7 +28,7 @@ game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\deb
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 120
+fps = 240
 
 register(
     id="Mojosabel-v0",
@@ -43,7 +43,6 @@ class Environment(gymnasium.Env):
         super(Environment, self).__init__()
         self.action_space = Discrete(18)
         self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
-
 
         # Initialize the state variables
         self.cached_distances_to_targets = []
