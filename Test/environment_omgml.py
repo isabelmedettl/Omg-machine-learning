@@ -28,7 +28,7 @@ game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\deb
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 240
+fps = 300
 
 register(
     id="Mojosabel-v0",
@@ -227,7 +227,7 @@ class Environment(gymnasium.Env):
         # image = cv2.resize(image, input_shape)
 
         image = Image.fromarray(image)
-        logging.debug("mss instance closed successfully.")
+        # logging.debug("mss instance closed successfully.")
 
         # Resize and convert to grayscale
         image = image.resize(input_shape)
@@ -344,13 +344,13 @@ class Environment(gymnasium.Env):
                 self.cached_distances_to_targets.append(self.distances_to_targets[i])
 
         if self.white_pixels > white_pixels_premove:
-            reward += 10  # Reward for progress (minerals / crocodiles)
+            reward += 20  # Reward for progress (minerals / crocodiles)
 
         if self.black_pixels > 400:
             reward -= 100  # Reward for death (punishment)
             print("Reward is -100 cus dead")
         elif self.black_pixels > black_pixels_premove:
-            reward += 50  # Reward for level up
+            reward += 100  # Reward for level up
 
         reward -= 0.1
 
@@ -360,7 +360,7 @@ class Environment(gymnasium.Env):
         return None
 
     def check_goal_state(self):
-        if self.black_pixels >= 2200:
+        if self.black_pixels >= 82:
             return True
 
         return False

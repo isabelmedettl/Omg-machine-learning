@@ -9,6 +9,7 @@ import tensorflow as tf
 import environment_omgml
 from datetime import datetime
 import matplotlib.pyplot as plt
+# from NoisyDense import NoisyDense
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -20,16 +21,17 @@ num_actions = 18
 
 # Configuration parameters for the whole setup
 seed = 42
-gamma = 0.99  # Discount factor for pasta rewards
+gamma = 0.97  # Discount factor for past rewards
 epsilon = 1.0  # Epsilon greedy parameter
 epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
 epsilon_interval = (
     epsilon_max - epsilon_min
 )  # Rate at which to reduce chance of random action being taken
-batch_size = 8  # Size of batch taken from replay buffer
+batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 500 # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 120  # Limit training episodes, will run until solved if smaller than 1
+
 
 def create_q_model():
     # Network defined by the Deepmind paper
@@ -52,10 +54,8 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 summary_writer = tf.summary.create_file_writer(log_dir)
 
 
-#model = create_q_model()
-
 # The first model makes the predictions for Q-values which are used to
-# make a action.
+# make an action.
 print(states)
 model = create_q_model()
 # Build a target model for the prediction of future rewards.
@@ -67,7 +67,7 @@ model.summary()
 
 # In the Deepmind paper they use RMSProp however then Adam optimizer
 # improves training time
-optimizer = keras.optimizers.Adam(learning_rate=0.001, clipnorm=1.0)
+optimizer = keras.optimizers.Adam(learning_rate=0.0005, clipnorm=1.0)
 
 # Experience replay buffers
 action_history = []
@@ -85,7 +85,7 @@ step_counter = 0
 # Number of frames to take random action and observe output
 epsilon_random_steps = max_steps_per_episode * 5
 # Number of frames for exploration
-epsilon_greedy_steps = epsilon_random_steps * 2
+epsilon_greedy_steps = max_steps_per_episode * max_episodes / 2
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 10000
@@ -124,7 +124,10 @@ while True:
             action = keras.ops.argmax(action_probabilities[0]).numpy()
 
         # Decay probability of taking random action
-        epsilon -= epsilon_interval / epsilon_greedy_steps
+        if epsilon_random_steps > 0:
+            epsilon_random_steps -= 1
+        else:
+            epsilon -= (epsilon_interval / epsilon_greedy_steps)
         epsilon = max(epsilon, epsilon_min)
 
         # Apply the sampled action in our environment
@@ -135,6 +138,8 @@ while True:
         print("Episode reward: ", int(episode_reward))
         print("Episode count: ", episode_count, " of ", max_episodes)
         print("Steps: ", step_counter, " of ", max_steps_per_episode)
+        print("Epsilon: ", epsilon)
+        print("Epsilon interval: ", epsilon_interval)
 
         # Save actions and states in replay buffer
         action_history.append(action)
