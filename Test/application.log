@@ -9680,3 +9680,11 @@
 2024-04-12 12:05:12,140 - DEBUG - findfont: score(FontEntry(fname='C:\\Windows\\Fonts\\calibrib.ttf', name='Calibri', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 10.335
 2024-04-12 12:05:12,140 - DEBUG - findfont: score(FontEntry(fname='C:\\Windows\\Fonts\\constan.ttf', name='Constantia', style='normal', variant='normal', weight=400, stretch='normal', size='scalable')) = 10.05
 2024-04-12 12:05:12,140 - DEBUG - findfont: Matching sans\-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('C:\\Python\\Anaconda\\envs\\omgmlwe\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\DejaVuSans.ttf') with score of 0.050000.
+2024-04-16 13:44:42,523 - DEBUG - CACHEDIR=C:\Users\mijo1919\.matplotlib
+2024-04-16 13:44:42,524 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
+2024-04-16 13:57:51,663 - DEBUG - CACHEDIR=C:\Users\mijo1919\.matplotlib
+2024-04-16 13:57:51,664 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
+2024-04-16 13:58:06,717 - DEBUG - CACHEDIR=C:\Users\mijo1919\.matplotlib
+2024-04-16 13:58:06,718 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
+2024-04-16 13:59:18,178 - DEBUG - CACHEDIR=C:\Users\mijo1919\.matplotlib
+2024-04-16 13:59:18,179 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
