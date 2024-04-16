@@ -17,7 +17,7 @@ env = environment_omgml.Environment()
 states = env.observation_space.shape
 actions = env.action_space
 
-num_actions = 18
+num_actions = 10
 
 # Configuration parameters for the whole setup
 seed = 42
@@ -30,7 +30,7 @@ epsilon_interval = (
 )  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 120  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 60  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():

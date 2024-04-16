@@ -72,22 +72,16 @@ class Environment(gymnasium.Env):
 
 
         # Define the actions as a class attribute
-        self.actions = [["w"], ["a"], ["s"], ["d"], ["space"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"],
-                        ["w", "space"],
-                        ["a", "space"], ["s", "space"], ["d", "space"], ["w", "a", "space"], ["w", "d", "space"],
-                        ["s", "a", "space"], ["s", "d", "space"], [None]]
+        self.actions = [["space"], ["w"], ["a"], ["s"], ["d"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"], [None]]
+        self.previous_action_index = 0
 
         self.game_process = None
-
-
-
-
 
     def step(self, action_index):
         global fps
 
         #print("took step", self.actions[action_index])
-        action = self.actions[action_index]
+
         if len(self.distances_to_targets) > 0:
             self.distances_to_targets.clear()
 
@@ -96,30 +90,31 @@ class Environment(gymnasium.Env):
 
         #print("locs", self.locations)
 
-        prepretime = time.time()
+        #prepretime = time.time()
 
         input_frames = 12
+        pretime = time.time()
 
         if not len(self.locations) <= 1:
-            for x in self.actions[action_index]:
-                pdi.keyDown(x)
-            pretime = time.time()
-            observation = self.update_locations()  # This might be replaced with an actual stable delay
-            time.sleep(max(0.0, input_frames/fps-(time.time() - pretime)))
-            for y in self.actions[action_index]:
-                pdi.keyUp(y)
-        else:
-            observation = self.update_locations()
+            if action_index == 0:
+                pdi.keyDown("space")
+                time.sleep(1/fps)
+                pdi.keyUp("space")
+            else:
+                if self.previous_action_index != action_index:
+                    for x in self.actions[self.previous_action_index]:
+                        pdi.keyUp(x)
+
+                    for y in self.actions[action_index]:
+                        pdi.keyDown(y)
+
+        observation = self.update_locations()
 
         for loc in self.pick_up_locations:
             self.distances_to_targets.append(self.calculate_distance(loc, self.agent_location))
         self.distances_to_targets.sort(reverse=True)
 
-
         reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
-
-        if reward >= 50:
-            done = True
 
         info = self.get_info()
         terminated = self.check_goal_state()
@@ -129,7 +124,12 @@ class Environment(gymnasium.Env):
         if self.step_counter >= 2000:
             truncated = True
 
-        print("Minerals: ", self.locations[0], "Agent: ", self.locations[1])
+        #print("Minerals: ", self.locations[0], "Agent: ", self.locations[1])
+
+        if action_index != 0:
+            self.previous_action_index = action_index
+
+        time.sleep(max(0.0, input_frames / fps - (time.time() - pretime)))  # Delay evens out
 
         return observation, reward, terminated, truncated, info
 
