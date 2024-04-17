@@ -16,6 +16,7 @@ from contextlib import contextmanager
 import mss.tools
 import logging
 from datetime import datetime
+import snake
 
 pdi.PAUSE = 0.0001
 pdi.FAILSAFE = False
@@ -24,7 +25,7 @@ pdi.FAILSAFE = False
 # Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Splab-17 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -42,8 +43,8 @@ logging.basicConfig(level=logging.DEBUG, filename='application.log',
 class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
-        self.action_space = Discrete(18)
-        self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
+        self.action_space = Discrete(4)
+        self.observation_space = Box(low=0, high=1, shape=(50, 50, 3), dtype=np.float32)  # Stack frames later
 
         # Initialize the state variables
         self.cached_distances_to_targets = []
@@ -51,12 +52,13 @@ class Environment(gymnasium.Env):
         self.locations = []
         self.pick_up_locations = []
         self.agent_location = (0, 0)
-        self.white_pixels = 0
-        self.black_pixels = 0
-        self.blue_min = 0.721
-        self.blue_max = 0.73
-        self.agent_min = 0.28
-        self.agent_max = 0.51
+        self.red_pixels = 0
+        self.dead = False
+        self.punished = False
+        self.blue_min = 0.4
+        self.blue_max = 1.0
+        self.agent_min = 0.3
+        self.agent_max = 1.0
         self.step_counter = 0
 
         self.WINDOW_LENGTH = 4  # Number of frames to stack
@@ -66,14 +68,14 @@ class Environment(gymnasium.Env):
         self.user32 = ctypes.windll.user32
         self.screen_wc = int(self.user32.GetSystemMetrics(0) / 2)
         self.screen_hc = int(self.user32.GetSystemMetrics(1) / 2)
-        self.game_w = 1280
-        self.game_h = 720
-        self.whiteborder_h = 16
+        self.game_w = 500
+        self.game_h = 500
+        self.whiteborder_h = 0
         self.screenshot_boundaries = {"left":int(self.screen_wc - self.game_w / 2), "top":int(self.screen_hc - self.game_h / 2), "width":self.game_w, "height":self.game_h - self.whiteborder_h}
 
 
         # Define the actions as a class attribute
-        self.actions = [["space"], ["w"], ["a"], ["s"], ["d"], ["w", "a"], ["w", "d"], ["s", "a"], ["s", "d"], [None]]
+        self.actions = ["left", "up", "right", "down"]
         self.previous_action_index = 0
 
         self.game_process = None
@@ -86,8 +88,8 @@ class Environment(gymnasium.Env):
         if len(self.distances_to_targets) > 0:
             self.distances_to_targets.clear()
 
-        white_pixels_premove = self.white_pixels
-        black_pixels_premove = self.black_pixels
+        red_pixels_premove = self.red_pixels
+        #black_pixels_premove = self.black_pixels
 
         #print("locs", self.locations)
 
@@ -97,17 +99,9 @@ class Environment(gymnasium.Env):
         pretime = time.time()
 
         if not len(self.locations) <= 1:
-            if action_index == 0:
-                pdi.keyDown("space")
-                time.sleep(1/fps)
-                pdi.keyUp("space")
-            else:
-                if self.previous_action_index != action_index:
-                    for x in self.actions[self.previous_action_index]:
-                        pdi.keyUp(x)
-
-                    for y in self.actions[action_index]:
-                        pdi.keyDown(y)
+            pdi.keyDown(self.actions[action_index])
+            time.sleep(0.01)
+            pdi.keyUp(self.actions[action_index])
 
         observation = self.update_locations()
 
@@ -115,7 +109,7 @@ class Environment(gymnasium.Env):
             self.distances_to_targets.append(self.calculate_distance(loc, self.agent_location))
         self.distances_to_targets.sort(reverse=True)
 
-        reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
+        reward = self.calculate_reward(red_pixels_premove)
 
         info = self.get_info()
         terminated = self.check_goal_state()
@@ -130,7 +124,7 @@ class Environment(gymnasium.Env):
         if action_index != 0:
             self.previous_action_index = action_index
 
-        time.sleep(max(0.0, input_frames / fps - (time.time() - pretime)))  # Delay evens out
+        #time.sleep(max(0.0, input_frames / fps - (time.time() - pretime)))  # Delay evens out
 
         return observation, reward, terminated, truncated, info
 
@@ -145,16 +139,16 @@ class Environment(gymnasium.Env):
           #  os.system(f"taskkill /f /im play.exe")  # Stops the game
 
         # If there's an existing game process, terminate it
-        if self.game_process is not None:
+        '''if self.game_process is not None:
             subprocess.call(['taskkill', '/F', '/T', '/PID', str(self.game_process.pid)])
             #self.game_process.terminate()  # Gracefully terminate the process
             #self.game_process.wait()  # Wait for the game process to terminate
-            self.game_process = None  # Reset the game process variable
+            self.game_process = None  # Reset the game process variable'''
 
 
         self.step_counter = 0
-        self.white_pixels = 0
-        self.black_pixels = 0
+        self.red_pixels = 0
+        self.dead = False
         self.cached_distances_to_targets.clear()
 
        # os.startfile(game_path)
@@ -163,6 +157,7 @@ class Environment(gymnasium.Env):
         time.sleep(2)
 
         observation = self.update_locations()
+
         info = self.get_info()
 
         return observation, info
@@ -171,30 +166,34 @@ class Environment(gymnasium.Env):
         pos_i_count = 0
         pos_j_count = 0
         positions = []
-        curr_white_pixels = 0
-        curr_black_pixels = 0
+        curr_red_pixels = 0
+        curr_blue_pixels = 0
         agent_position = None
 
         for i in image_array:
             for j in i:
-                if self.blue_min < j[0] < self.blue_max:  # blue
+                if self.blue_min < j[1] < self.blue_max:  # green
                     positions.append((pos_i_count, pos_j_count))
-                elif self.agent_min < j[1] < self.agent_max:  # grey
+                elif self.agent_min < j[0] <= self.agent_max:  # blue
                     agent_position = (pos_i_count, pos_j_count)
-                elif j[1] == 1:
-                    curr_white_pixels += 1
-                elif j[1] == 0:
-                    curr_black_pixels += 1
+                    curr_blue_pixels += 1
+                elif j[2] >= 0.5:
+                    curr_red_pixels += 1
 
                 pos_j_count += 1
             pos_i_count += 1
             pos_j_count = 0
 
-        if curr_white_pixels > self.white_pixels:
-            self.white_pixels = curr_white_pixels
+        if curr_blue_pixels >= 100:
+            self.dead = True
+        else:
+            self.dead = False
+            self.punished = False
 
-        if curr_black_pixels > self.black_pixels:
-            self.black_pixels = curr_black_pixels
+        if curr_red_pixels > self.red_pixels:
+            self.red_pixels = curr_red_pixels
+
+        print(curr_blue_pixels)
 
         return [positions, agent_position]
 
@@ -215,7 +214,7 @@ class Environment(gymnasium.Env):
                 logging.error(f"An error occurred while closing mss: {e_close}", exc_info=True)
 
 
-    def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
+    def process_screenshot(self, output_filename_screenshot, input_shape=(50, 50)):
         # Capture the screenshot
 
         with self.managed_mss() as sct:
@@ -223,7 +222,7 @@ class Environment(gymnasium.Env):
 
         # Convert to NumPy array and to BGR color space
         image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
-
+        print('should print')
         # Resize early to reduce the amount of data processed in subsequent steps
         # image = cv2.resize(image, input_shape)
 
@@ -259,7 +258,7 @@ class Environment(gymnasium.Env):
             if len(self.locations) > 0:
                 if len(self.locations[0]) > 13:
                     cv2.imwrite(f'screenshot{datetime.now().strftime("%Y%m%d_%H%M%S")}.png', processed_image)
-
+        cv2.imwrite('screenshotsnake00.png', processed_image)
         # Normalize the processed image
         processed_image_normalized = processed_image / 255.0
 
@@ -329,7 +328,7 @@ class Environment(gymnasium.Env):
             return 100  # Returns big distance to make sure we no say good when no good
         return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
 
-    def calculate_reward(self, white_pixels_premove, black_pixels_premove):
+    def calculate_reward(self, red_pixels_premove):
 
         # print(self.cached_distances_to_targets, self.distances_to_targets)
 
@@ -344,16 +343,13 @@ class Environment(gymnasium.Env):
             for i in range(len(self.distances_to_targets)):
                 self.cached_distances_to_targets.append(self.distances_to_targets[i])
 
-        if self.white_pixels > white_pixels_premove:
-            reward += 20  # Reward for progress (minerals / crocodiles)
+        if self.red_pixels > red_pixels_premove:
+            reward += 10  # Reward for progress (minerals / crocodiles)
 
-        if self.black_pixels > 400:
-            reward -= 100  # Reward for death (punishment)
-            print("Reward is -100 cus dead")
-        elif self.black_pixels > black_pixels_premove:
-            reward += 100  # Reward for level up
-
-        reward -= 0.1
+        if self.dead and not self.punished:
+            reward -= 2  # Reward for death (punishment)
+            print("cus dead")
+            self.punished = True
 
         return reward
 
@@ -361,7 +357,7 @@ class Environment(gymnasium.Env):
         return None
 
     def check_goal_state(self):
-        if self.black_pixels >= 82:
+        if self.blue_min >= 82:
             return True
 
         return False

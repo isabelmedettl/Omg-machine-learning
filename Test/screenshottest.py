@@ -16,46 +16,54 @@ import mss.tools
 user32 = ctypes.windll.user32
 screen_wc = int(user32.GetSystemMetrics(0) / 2)
 screen_hc = int(user32.GetSystemMetrics(1) / 2)
-game_w = 1280
-game_h = 720
-whiteborder_h = 16
+game_w = 500
+game_h = 500
+whiteborder_h = 0
 screenshot_boundaries = {"left":int(screen_wc - game_w / 2), "top":int(screen_hc - game_h / 2), "width":game_w, "height":game_h - whiteborder_h}
 
 WINDOW_LENGTH = 4  # Number of frames to stack
 frame_queue = deque(maxlen=WINDOW_LENGTH)  # Queue to hold the last N frames
 
 
-def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
+def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(25, 25)):
     # Capture the screenshot
+
+
     image = mss.mss().grab(screenshot_boundaries)
 
+    # Convert to NumPy array and to BGR color space
     image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
+    #print('should print')
+    # Resize early to reduce the amount of data processed in subsequent steps
+    # image = cv2.resize(image, input_shape)
 
-    # Create a mask for the blue channel with a threshold
-    ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
-
-    # Prepare a 3-channel mask for bitwise operations
-    mask3 = np.zeros_like(image)
-    mask3[:, :, 0] = mask  # Apply mask to the blue channel
-
-    # Extract the blue region using bitwise_and
-    blue_region = cv2.bitwise_and(image, mask3)
-
-    # Convert the original image to grayscale and then back to BGR
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
-
-    # Extract the non-blue region from the grayscale image
-    non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
-
-    # Combine the blue and grayscale regions
-    combined_image = blue_region + non_blue_region
-
-    # Convert to PIL Image to use the resize and convert functions
-    image = Image.fromarray(combined_image)
+    image = Image.fromarray(image)
+    # logging.debug("mss instance closed successfully.")
 
     # Resize and convert to grayscale
     image = image.resize(input_shape)
+
+    # Create a mask for the blue channel with a threshold
+    # ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
+
+    # Prepare a 3-channel mask for bitwise operations
+    # mask3 = np.zeros_like(image)
+    # mask3[:, :, 0] = mask  # Apply mask to the blue channel
+
+    # Extract the blue region using bitwise_and
+    # blue_region = cv2.bitwise_and(image, mask3)
+
+    # Convert the original image to grayscale and then back to BGR
+    # gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+
+    # Extract the non-blue region from the grayscale image
+    # non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
+
+    # Combine the blue and grayscale regions
+    # combined_image = blue_region + non_blue_region
+
+    # Convert back to NumPy array and save
 
     # Convert back to NumPy array and save
     processed_image = np.array(image)
@@ -64,8 +72,6 @@ def process_and_stack_frames(output_filename_stacks, output_filename_screenshot,
     processed_image_normalized = np.array(image) / 255.0
 
     return processed_image_normalized
-
-
 
 
 try:

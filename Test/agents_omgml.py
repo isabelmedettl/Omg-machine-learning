@@ -17,7 +17,7 @@ env = environment_omgml.Environment()
 states = env.observation_space.shape
 actions = env.action_space
 
-num_actions = 10
+num_actions = 4
 
 # Configuration parameters for the whole setup
 seed = 42
