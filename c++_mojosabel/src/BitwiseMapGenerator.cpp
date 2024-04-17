@@ -28,7 +28,7 @@ namespace mojosabel {
             for(int y = 0; y < MAP_HEIGHT; y++)
             {
                 //kolla nere y
-                if (y == Y_MIN_OFFSET || y == Y_MAX_OFFSET || x <= X_MIN_OFFSET || x >= X_MAX_OFFSET)
+                if (y == Y_MIN_OFFSET || y == Y_MAX_OFFSET || x < X_MIN_OFFSET || x >= X_MAX_OFFSET)
                 {
                     level->easyFill(x, y, "Wall");
                 }

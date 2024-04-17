@@ -282,7 +282,9 @@ namespace mojosabel {
             for (Entity* e : entities)
             {
                 e->sneakyUpdate();
-                checkAllCollisions(e);
+                if (e->tag == constants::playerTag || e->tag == "DiggingBullet" || e->tag == "Door") {
+                    checkAllCollisions(e);
+                }
             }
  
             for (Entity* e : addedEntities)
