@@ -1,7 +1,10 @@
 #from rl.agents import DQNAgent  # Need to -> pip install keras-rl2
 #from rl.memory import SequentialMemory
 #from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
+from collections import deque
+
 import keras
+import psutil
 from keras import layers
 from gymnasium.wrappers import FrameStack
 import numpy as np
@@ -10,6 +13,7 @@ import environment_omgml
 from datetime import datetime
 import matplotlib.pyplot as plt
 from NoisyDense import NoisyDense
+import time
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -67,11 +71,42 @@ model.summary()
 
 # In the Deepmind paper they use RMSProp however then Adam optimizer
 # improves training time
-optimizer = keras.optimizers.Adam(learning_rate=0.0005, clipnorm=1.0)
+#optimizer = keras.optimizers.Adam(learning_rate=0.0005, clipnorm=1.0)
+optimizer = keras.optimizers.Nadam(learning_rate=0.0005, clipnorm=1.0)
 
 # Experience replay buffers
-action_history = []
-state_history = []
+#action_history = []
+#state_history = []
+
+def get_max_memory_length(fraction_of_available_memory=0.1):
+    """
+    Calculates the maximum memory length for replay buffers based on a fraction of available system memory.
+
+    Parameters:
+    - fraction_of_available_memory: Fraction of available memory you wish to allocate. Defaults to 10%.
+
+    Returns:
+    - An integer indicating the calculated max memory length.
+    """
+    # Get total physical memory and available memory
+    total_memory = psutil.virtual_memory().total
+    available_memory = psutil.virtual_memory().available
+
+    # Calculate the memory allocation for the process
+    memory_allocation = available_memory * fraction_of_available_memory
+
+    # Assuming each entry in the replay buffer takes up 100 KB, calculate max memory length
+    # This is a simplification, adjust based on your actual memory per entry
+    memory_per_entry = 100 * 1024  # 100 KB in bytes
+    max_memory_length = int(memory_allocation / memory_per_entry)
+
+    return max_memory_length
+
+
+current_max_memory_length = get_max_memory_length()
+action_history = deque(maxlen=current_max_memory_length)
+state_history = deque(maxlen=current_max_memory_length)
+
 state_next_history = []
 rewards_history = []
 done_history = []
@@ -98,6 +133,7 @@ update_target_network = 100
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
 
+pretime = 0
 while True:
     observation, _ = env.reset()
     state = np.array(observation)
@@ -105,20 +141,31 @@ while True:
     episode_reward = 0
     step_counter = 0
 
-# define max_steps_per_episode
+#define max_steps_per_episode
     for timestep in range(1, max_steps_per_episode):
         #frame_count += 1
         step_counter += 1
+        print(time.time() - pretime)
+        pretime = time.time()
 
 
         # Predict action Q-values
         # From environment state
+
+        '''
         state_tensor = keras.ops.convert_to_tensor(state)
         state_tensor = keras.ops.expand_dims(state_tensor, 0) #adding another dimension to the tensor
         action_probabilities = model(state_tensor, training=False)
         # Take best action
         action = keras.ops.argmax(action_probabilities[0]).numpy()
+        '''
 
+
+        ''' Initially, the state processing and action selection were not clearly optimized for batch operations. By explicitly converting the state into a tensor and expanding its dimensions in one step, and then using vectorized operations for action selection, the process becomes more efficient.'''
+        # After optimization
+        state_tensor = tf.expand_dims(tf.convert_to_tensor(state), 0)
+        action_probabilities = model(state_tensor, training=False)
+        action = tf.argmax(action_probabilities[0]).numpy()
 
         # Apply the sampled action in our environment
         state_next, reward, done, _, _ = env.step(action)
@@ -144,18 +191,30 @@ while True:
 
         # Update every fourth frame and once batch size is over 32
         if step_counter % update_after_actions == 0 and len(done_history) > batch_size:
+            # BEFORE OPTIMIZATION
+            '''
             # Get indices of samples for replay buffers
             indices = np.random.choice(range(len(done_history)), size=batch_size)
 
             # Using list comprehension to sample from replay buffer
             state_sample = np.array([state_history[i] for i in indices])
             state_next_sample = np.array([state_next_history[i] for i in indices])
+            
+            '''
+
+            # Sampling from the replay buffer (Optimized)
+            indices = np.random.choice(range(len(done_history)), size=batch_size)
+            state_sample = np.array([state_history[i] for i in indices])
+            state_next_sample = np.array([state_next_history[i] for i in indices])
+
             rewards_sample = [rewards_history[i] for i in indices]
             action_sample = [action_history[i] for i in indices]
             done_sample = keras.ops.convert_to_tensor(
                 [float(done_history[i]) for i in indices]
             )
 
+            #BEFORE OPTIMIZATION
+            '''
             # Build the updated Q-values for the sampled future states
             # Use the target model for stability
             future_rewards = model_target.predict(state_next_sample)
@@ -163,6 +222,10 @@ while True:
             updated_q_values = rewards_sample + gamma * keras.ops.amax(
                 future_rewards, axis=1
             )
+            '''
+            # Calculating updated Q-values (Optimized)
+            future_rewards = model_target.predict(state_next_sample)
+            updated_q_values = rewards_sample + gamma * tf.reduce_max(future_rewards, axis=1)
 
             # If final frame set the last value to -1
             updated_q_values = updated_q_values * (1 - done_sample) - done_sample
@@ -170,6 +233,8 @@ while True:
             # Create a mask so we only calculate loss on the updated Q-values
             masks = keras.ops.one_hot(action_sample, num_actions)
 
+            #BEFORE OPTIMIZATION
+            '''
             with tf.GradientTape() as tape:
                 # Train the model on the states and updated Q-values
                 q_values = model(state_sample)
@@ -178,8 +243,17 @@ while True:
                 q_action = keras.ops.sum(keras.ops.multiply(q_values, masks), axis=1)
                 # Calculate loss between new Q-value and old Q-value
                 loss = loss_function(updated_q_values, q_action)
-
+            
+            
             # Backpropagation
+            grads = tape.gradient(loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            '''
+            # After optimization
+            with tf.GradientTape() as tape:
+                q_values = model(state_sample)
+                q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
+                loss = loss_function(updated_q_values, q_action)
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
