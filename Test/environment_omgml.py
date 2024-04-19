@@ -25,7 +25,9 @@ pdi.FAILSAFE = False
 # Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Splab-17 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe"  # Replace this with your game path
+# Snake monty: C:\\Python\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe
+# Snakesabel: C:\\Users\\isabe\\Omgml\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe
+game_path = "C:\\Users\\isabe\\Omgml\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -82,7 +84,7 @@ class Environment(gymnasium.Env):
 
     def step(self, action_index):
         global fps
-
+        print('Dead: ', self.dead, ' | Punished: ', self.punished)
         #print("took step", self.actions[action_index])
 
         if len(self.distances_to_targets) > 0:
@@ -100,7 +102,7 @@ class Environment(gymnasium.Env):
 
         if not len(self.locations) <= 1:
             pdi.keyDown(self.actions[action_index])
-            time.sleep(0.01)
+            time.sleep(0.03)
             pdi.keyUp(self.actions[action_index])
 
         observation = self.update_locations()
@@ -134,9 +136,10 @@ class Environment(gymnasium.Env):
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-        print("it reset")
-        #if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
-          #  os.system(f"taskkill /f /im play.exe")  # Stops the game
+        print("it reset!")
+
+        if gw.getWindowsWithTitle(game_path) or gw.getWindowsWithTitle(window_title):
+            os.system(f"taskkill /f /im snake.exe")  # Stops the game
 
         # If there's an existing game process, terminate it
         '''if self.game_process is not None:
@@ -151,10 +154,16 @@ class Environment(gymnasium.Env):
         self.dead = False
         self.cached_distances_to_targets.clear()
 
-       # os.startfile(game_path)
+        os.startfile(game_path)
+
+
+
         # Start a new game process
-        self.game_process = subprocess.Popen([game_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        time.sleep(2)
+        #self.game_process = subprocess.Popen([game_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print('should open')
+        time.sleep(3)
+        gamewindow = gw.getWindowsWithTitle("pygame window")
+        gamewindow[0].activate()
 
         observation = self.update_locations()
 
@@ -193,8 +202,6 @@ class Environment(gymnasium.Env):
         if curr_red_pixels > self.red_pixels:
             self.red_pixels = curr_red_pixels
 
-        print(curr_blue_pixels)
-
         return [positions, agent_position]
 
     @contextmanager
@@ -222,7 +229,6 @@ class Environment(gymnasium.Env):
 
         # Convert to NumPy array and to BGR color space
         image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
-        print('should print')
         # Resize early to reduce the amount of data processed in subsequent steps
         # image = cv2.resize(image, input_shape)
 
@@ -258,7 +264,6 @@ class Environment(gymnasium.Env):
             if len(self.locations) > 0:
                 if len(self.locations[0]) > 13:
                     cv2.imwrite(f'screenshot{datetime.now().strftime("%Y%m%d_%H%M%S")}.png', processed_image)
-        cv2.imwrite('screenshotsnake00.png', processed_image)
         # Normalize the processed image
         processed_image_normalized = processed_image / 255.0
 
@@ -337,7 +342,7 @@ class Environment(gymnasium.Env):
         if len(self.cached_distances_to_targets) > 0:
             for i in range(min(len(self.distances_to_targets), len(self.cached_distances_to_targets))):
                 if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
-                    reward += (self.cached_distances_to_targets[i] - self.distances_to_targets[i]) / 5 # we are testing how much to divide
+                    reward += (self.cached_distances_to_targets[i] - self.distances_to_targets[i]) / 10 # we are testing how much to divide
                     self.cached_distances_to_targets[i] = self.distances_to_targets[i]
         else:
             for i in range(len(self.distances_to_targets)):
@@ -348,7 +353,7 @@ class Environment(gymnasium.Env):
 
         if self.dead and not self.punished:
             reward -= 2  # Reward for death (punishment)
-            print("cus dead")
+            print('Dieded')
             self.punished = True
 
         return reward

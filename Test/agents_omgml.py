@@ -30,7 +30,7 @@ epsilon_interval = (
 )  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 60  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 100  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():
@@ -139,7 +139,6 @@ while True:
         print("Episode count: ", episode_count, " of ", max_episodes)
         print("Steps: ", step_counter, " of ", max_steps_per_episode)
         print("Epsilon: ", epsilon)
-        print("Epsilon interval: ", epsilon_interval)
 
         # Save actions and states in replay buffer
         action_history.append(action)

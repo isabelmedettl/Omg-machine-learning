@@ -155,7 +155,7 @@ def redrawWindow():
     if s.dead:
         pygame.draw.rect(win, (0, 0, 255), pygame.Rect(0, 0, 500, 500))
         pygame.display.update()
-        time.sleep(0.02)
+        time.sleep(0.1)
         s.dead = False
     else:
         pygame.display.update()
