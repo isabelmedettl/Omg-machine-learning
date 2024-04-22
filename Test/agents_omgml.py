@@ -8,6 +8,8 @@ import numpy as np
 import tensorflow as tf
 import environment_omgml
 from datetime import datetime
+import matplotlib.pyplot as plt
+from NoisyDense import NoisyDense
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -15,20 +17,21 @@ env = environment_omgml.Environment()
 states = env.observation_space.shape
 actions = env.action_space
 
-num_actions = 18
+num_actions = 10
 
 # Configuration parameters for the whole setup
 seed = 42
-gamma = 0.99  # Discount factor for pasta rewards
-epsilon = 1.0  # Epsilon greedy parameter
-epsilon_min = 0.1  # Minimum epsilon greedy parameter
-epsilon_max = 1.0  # Maximum epsilon greedy parameter
-epsilon_interval = (
-    epsilon_max - epsilon_min
-)  # Rate at which to reduce chance of random action being taken
-batch_size = 8  # Size of batch taken from replay buffer
+gamma = 0.97  # Discount factor for past rewards
+#epsilon = 1.0  # Epsilon greedy parameter
+#epsilon_min = 0.1  # Minimum epsilon greedy parameter
+#epsilon_max = 1.0  # Maximum epsilon greedy parameter
+#epsilon_interval = (
+    #epsilon_max - epsilon_min
+#)  # Rate at which to reduce chance of random action being taken
+batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 5  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 60  # Limit training episodes, will run until solved if smaller than 1
+
 
 def create_q_model():
     # Network defined by the Deepmind paper
@@ -39,18 +42,20 @@ def create_q_model():
             layers.Conv2D(64, 4, strides=2, activation="relu"),
             layers.Conv2D(64, 3, strides=1, activation="relu"),
             layers.Flatten(),
-            layers.Dense(512, activation="relu"),
-            layers.Dense(num_actions, activation="linear"),
+            NoisyDense(512, activation="relu"),
+            NoisyDense(num_actions, activation="linear"),
         ]
     )
 
 
+# Set up TensorBoard logging
+log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+summary_writer = tf.summary.create_file_writer(log_dir)
 
-
-#model = create_q_model()
 
 # The first model makes the predictions for Q-values which are used to
-# make a action.
+# make an action.
 print(states)
 model = create_q_model()
 # Build a target model for the prediction of future rewards.
@@ -62,7 +67,7 @@ model.summary()
 
 # In the Deepmind paper they use RMSProp however then Adam optimizer
 # improves training time
-optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
+optimizer = keras.optimizers.Adam(learning_rate=0.0005, clipnorm=1.0)
 
 # Experience replay buffers
 action_history = []
@@ -71,16 +76,16 @@ state_next_history = []
 rewards_history = []
 done_history = []
 episode_reward_history = []
-episode_reward_history_max = 100
+episode_reward_history_max = max_episodes * 2
 running_reward = 0
 running_reward_max = 100
 episode_count = 0
 frame_count = 0
 step_counter = 0
 # Number of frames to take random action and observe output
-epsilon_random_steps = 50
+#epsilon_random_steps = max_steps_per_episode * 5
 # Number of frames for exploration
-epsilon_greedy_steps = 100
+#epsilon_greedy_steps = max_steps_per_episode * max_episodes / 2
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 10000
@@ -98,28 +103,22 @@ while True:
     state = np.array(observation)
     #state = observation
     episode_reward = 0
+    step_counter = 0
 
 # define max_steps_per_episode
     for timestep in range(1, max_steps_per_episode):
         #frame_count += 1
         step_counter += 1
 
-        # Use epsilon-greedy for exploration
-        if step_counter < epsilon_random_steps or epsilon > np.random.rand(1)[0]:
-            # Take random action
-            action = np.random.choice(num_actions)
-        else:
-            # Predict action Q-values
-            # From environment state
-            state_tensor = keras.ops.convert_to_tensor(state)
-            state_tensor = keras.ops.expand_dims(state_tensor, 0) #adding another dimension to the tensor
-            action_probabilities = model(state_tensor, training=False)
-            # Take best action
-            action = keras.ops.argmax(action_probabilities[0]).numpy()
 
-        # Decay probability of taking random action
-        epsilon -= epsilon_interval / epsilon_greedy_steps
-        epsilon = max(epsilon, epsilon_min)
+        # Predict action Q-values
+        # From environment state
+        state_tensor = keras.ops.convert_to_tensor(state)
+        state_tensor = keras.ops.expand_dims(state_tensor, 0) #adding another dimension to the tensor
+        action_probabilities = model(state_tensor, training=False)
+        # Take best action
+        action = keras.ops.argmax(action_probabilities[0]).numpy()
+
 
         # Apply the sampled action in our environment
         state_next, reward, done, _, _ = env.step(action)
@@ -127,6 +126,9 @@ while True:
 
         episode_reward += reward
         print("Episode reward: ", int(episode_reward))
+        print("Episode count: ", episode_count, " of ", max_episodes)
+        print("Steps: ", step_counter, " of ", max_steps_per_episode)
+
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -207,19 +209,28 @@ while True:
 
     episode_count += 1
 
-    if running_reward > running_reward_max:  # Condition to consider the task solved
-        print("Solved at episode {}!".format(episode_count))
-        model.save(f'model_from{datetime.now()}')
-        break
+    model.save("episodic_model.keras")
 
-    if (
-        max_episodes > 0 and episode_count >= max_episodes
-    ):  # Maximum number of episodes reached
+    with summary_writer.as_default():
+        tf.summary.scalar('Episode Reward', episode_reward, step=episode_count)
+        tf.summary.scalar('Running Reward', running_reward, step=episode_count)
+        tf.summary.scalar('Loss', loss, step=episode_count)
+        summary_writer.flush()
+
+    '''if running_reward > running_reward_max:  # Condition to consider the task solved
+        print("Solved at episode {}!".format(episode_count))
+        model.save(f'model_from{datetime.now().strftime("%Y%m%d_%H%M%S")}.keras')
+        break'''
+
+    if max_episodes > 0 and episode_count >= max_episodes:  # Maximum number of episodes reached
         print("Stopped at episode {}!".format(episode_count))
         model.save(f'model_from{datetime.now().strftime("%Y%m%d_%H%M%S")}.keras')
+        plt.plot(range(len(episode_reward_history)), episode_reward_history)
+        plt.title("Rewards per episode")
+        plt.xlabel("Episode")
+        plt.ylabel("Reward")
+        plt.show()
         break
-
-
 
 # OLD STUFF
 '''
