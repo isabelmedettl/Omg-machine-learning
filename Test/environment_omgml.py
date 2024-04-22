@@ -25,7 +25,7 @@ pdi.FAILSAFE = False
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Moa path: "C:\\dev\\moaskola\\Kandidat\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"
 # Splab22 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -54,10 +54,10 @@ class Environment(gymnasium.Env):
         self.agent_location = (0, 0)
         self.white_pixels = 0
         self.black_pixels = 0
-        self.blue_min = 0.721
-        self.blue_max = 0.73
-        self.agent_min = 0.28
-        self.agent_max = 0.51
+        self.blue_min = 0.45  # Sea Adv: (RED - 0.45)
+        self.blue_max = 0.471  # Sea Adv: (RED - 0.471)
+        self.agent_min = 0.39  # Sea Adv: (GREEN - 0.39)
+        self.agent_max = 0.52  # Sea Adv: (GREEN - 0.52)
         self.step_counter = 0
 
         self.WINDOW_LENGTH = 4  # Number of frames to stack
@@ -126,7 +126,7 @@ class Environment(gymnasium.Env):
         if self.step_counter >= 2000:
             truncated = True
 
-        #print("Minerals: ", self.locations[0], "Agent: ", self.locations[1])
+        print("Crocodilos: ", self.locations[0], "Agent: ", self.locations[1])
 
         if action_index != 0:
             self.previous_action_index = action_index
@@ -178,9 +178,9 @@ class Environment(gymnasium.Env):
 
         for i in image_array:
             for j in i:
-                if self.blue_min < j[0] < self.blue_max:  # blue
+                if self.blue_min < j[2] < self.blue_max:  # red
                     positions.append((pos_i_count, pos_j_count))
-                elif self.agent_min < j[1] < self.agent_max:  # grey
+                elif self.agent_min < j[1] < self.agent_max:  # green
                     agent_position = (pos_i_count, pos_j_count)
                 elif j[1] == 1:
                     curr_white_pixels += 1
@@ -256,6 +256,8 @@ class Environment(gymnasium.Env):
 
         # Convert back to NumPy array and save
         processed_image = np.array(image)
+        cv2.imwrite("screenshot00.png", processed_image)
+
         if self.locations is not None:
             if len(self.locations) > 0:
                 if len(self.locations[0]) > 13:

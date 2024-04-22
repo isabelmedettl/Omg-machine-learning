@@ -27,41 +27,47 @@ frame_queue = deque(maxlen=WINDOW_LENGTH)  # Queue to hold the last N frames
 
 def process_and_stack_frames(output_filename_stacks, output_filename_screenshot, input_shape=(80, 44)):
     # Capture the screenshot
+
     image = mss.mss().grab(screenshot_boundaries)
 
+    # Convert to NumPy array and to BGR color space
     image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)
 
-    # Create a mask for the blue channel with a threshold
-    ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
+    # Resize early to reduce the amount of data processed in subsequent steps
+    # image = cv2.resize(image, input_shape)
 
-    # Prepare a 3-channel mask for bitwise operations
-    mask3 = np.zeros_like(image)
-    mask3[:, :, 0] = mask  # Apply mask to the blue channel
-
-    # Extract the blue region using bitwise_and
-    blue_region = cv2.bitwise_and(image, mask3)
-
-    # Convert the original image to grayscale and then back to BGR
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
-
-    # Extract the non-blue region from the grayscale image
-    non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
-
-    # Combine the blue and grayscale regions
-    combined_image = blue_region + non_blue_region
-
-    # Convert to PIL Image to use the resize and convert functions
-    image = Image.fromarray(combined_image)
+    image = Image.fromarray(image)
+    # logging.debug("mss instance closed successfully.")
 
     # Resize and convert to grayscale
     image = image.resize(input_shape)
+
+    # Create a mask for the blue channel with a threshold
+    # ret, mask = cv2.threshold(image[:, :, 0], 200, 255, cv2.THRESH_BINARY)
+
+    # Prepare a 3-channel mask for bitwise operations
+    # mask3 = np.zeros_like(image)
+    # mask3[:, :, 0] = mask  # Apply mask to the blue channel
+
+    # Extract the blue region using bitwise_and
+    # blue_region = cv2.bitwise_and(image, mask3)
+
+    # Convert the original image to grayscale and then back to BGR
+    # gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # gray_image_bgr = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+
+    # Extract the non-blue region from the grayscale image
+    # non_blue_region = cv2.bitwise_and(gray_image_bgr, 255 - mask3)
+
+    # Combine the blue and grayscale regions
+    # combined_image = blue_region + non_blue_region
 
     # Convert back to NumPy array and save
     processed_image = np.array(image)
     cv2.imwrite(output_filename_screenshot, processed_image)
 
-    processed_image_normalized = np.array(image) / 255.0
+    # Normalize the processed image
+    processed_image_normalized = processed_image / 255.0
 
     return processed_image_normalized
 
