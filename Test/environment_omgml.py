@@ -1,14 +1,15 @@
-import os
-from PIL import Image, ImageDraw
+#import os
+import tkinter
+from PIL import Image, ImageGrab
 import numpy as np
 import pyautogui
 import cv2
 import time
 import ctypes
-import pygetwindow as gw
+#import pygetwindow as gw
 import subprocess
 from collections import deque
-import pydirectinput as pdi
+#import pydirectinput as pdi
 import gymnasium
 from gymnasium.spaces import Discrete, Box
 from gymnasium.envs.registration import register
@@ -17,15 +18,16 @@ import mss.tools
 import logging
 from datetime import datetime
 
-pdi.PAUSE = 0.0001
-pdi.FAILSAFE = False
+pyautogui.PAUSE = 0.0001
+pyautogui.FAILSAFE = False
 
 # Isabel path: C:\\Users\\isabe\\Documents\\ML\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Skolsabel path: C:\\Users\\mijo1919\\Documents\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Moa path: "C:\\dev\\moaskola\\Kandidat\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"
 # Splab22 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+# Ubuntu path: /mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test
+game_path = "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/c++_mojosabel/build/debug/play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
@@ -64,11 +66,11 @@ class Environment(gymnasium.Env):
         self.frame_queue = deque(maxlen=self.WINDOW_LENGTH)  # Queue to hold the last N frames
 
         # Screenshot variables
-        self.user32 = ctypes.windll.user32
-        self.screen_wc = int(self.user32.GetSystemMetrics(0) / 2)
-        self.screen_hc = int(self.user32.GetSystemMetrics(1) / 2)
-        self.game_w = 1280
-        self.game_h = 720
+        # self.user32 = ctypes.windll.user32
+        self.screen_wc = 1920 / 2  #int(self.user32.GetSystemMetrics(0) / 2)
+        self.screen_hc = 1080 / 2  #int(self.user32.GetSystemMetrics(1) / 2)
+        self.game_w = 600
+        self.game_h = 440
         self.whiteborder_h = 16
         self.screenshot_boundaries = {"left":int(self.screen_wc - self.game_w / 2), "top":int(self.screen_hc - self.game_h / 2), "width":self.game_w, "height":self.game_h - self.whiteborder_h}
 
@@ -99,16 +101,16 @@ class Environment(gymnasium.Env):
 
         if not len(self.locations) <= 1:
             if action_index == 0:
-                pdi.keyDown("space")
+                pyautogui.keyDown("space")
                 time.sleep(1/fps)
-                pdi.keyUp("space")
+                pyautogui.keyUp("space")
             else:
                 if self.previous_action_index != action_index:
                     for x in self.actions[self.previous_action_index]:
-                        pdi.keyUp(x)
+                        pyautogui.keyUp(x)
 
                     for y in self.actions[action_index]:
-                        pdi.keyDown(y)
+                        pyautogui.keyDown(y)
 
         observation = self.update_locations()
 
@@ -218,9 +220,11 @@ class Environment(gymnasium.Env):
 
     def process_screenshot(self, output_filename_screenshot, input_shape=(80, 44)):
         # Capture the screenshot
+        print('SSB: ', self.screenshot_boundaries)
+        image = ImageGrab.grab(bbox=(100, 100, 500, 500), xdisplay="0")
 
-        with self.managed_mss() as sct:
-            image = sct.grab(self.screenshot_boundaries)
+        #with self.managed_mss() as sct:
+        #    image = sct.grab(self.screenshot_boundaries)
 
         # Convert to NumPy array and to BGR color space
         image = cv2.cvtColor(np.array(image), cv2.COLOR_BGRA2BGR)

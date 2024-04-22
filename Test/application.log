@@ -9688,3 +9688,106 @@
 2024-04-16 13:58:06,718 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
 2024-04-16 13:59:18,178 - DEBUG - CACHEDIR=C:\Users\mijo1919\.matplotlib
 2024-04-16 13:59:18,179 - DEBUG - Using fontManager instance from C:\Users\mijo1919\.matplotlib\fontlist-v330.json
+2024-04-22 15:58:03,882 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 15:58:03,882 - DEBUG - font search path [PosixPath('/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf'), PosixPath('/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/afm'), PosixPath('/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/pdfcorefonts')]
+2024-04-22 15:58:04,062 - INFO - generated new fontManager
+2024-04-22 16:01:09,618 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:01:09,619 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:05:35,573 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:05:35,574 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:06:12,739 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:06:12,740 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:06:15,383 - ERROR - An error occurred with mss: XGetImage() failed
+Traceback (most recent call last):
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 208, in managed_mss
+    yield sct
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 225, in process_screenshot
+    image = sct.grab(self.screenshot_boundaries)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/base.py", line 90, in grab
+    screenshot = self._grab_impl(monitor)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 427, in _grab_impl
+    ximage = self.xlib.XGetImage(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 229, in _validate
+    raise ScreenShotError(f"{func.__name__}() failed", details=details)
+mss.exception.ScreenShotError: XGetImage() failed
+2024-04-22 16:08:19,553 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:08:19,554 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:09:02,286 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:09:02,287 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:09:04,912 - ERROR - An error occurred with mss: XGetImage() failed
+Traceback (most recent call last):
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 208, in managed_mss
+    yield sct
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 225, in process_screenshot
+    image = sct.grab(self.screenshot_boundaries)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/base.py", line 90, in grab
+    screenshot = self._grab_impl(monitor)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 427, in _grab_impl
+    ximage = self.xlib.XGetImage(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 229, in _validate
+    raise ScreenShotError(f"{func.__name__}() failed", details=details)
+mss.exception.ScreenShotError: XGetImage() failed
+2024-04-22 16:12:33,846 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:12:33,846 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:12:36,468 - ERROR - An error occurred with mss: XGetImage() failed
+Traceback (most recent call last):
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 208, in managed_mss
+    yield sct
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 225, in process_screenshot
+    image = sct.grab(self.screenshot_boundaries)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/base.py", line 90, in grab
+    screenshot = self._grab_impl(monitor)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 427, in _grab_impl
+    ximage = self.xlib.XGetImage(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 229, in _validate
+    raise ScreenShotError(f"{func.__name__}() failed", details=details)
+mss.exception.ScreenShotError: XGetImage() failed
+2024-04-22 16:16:23,260 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:16:23,261 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:16:25,889 - ERROR - An error occurred with mss: XGetImage() failed
+Traceback (most recent call last):
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 208, in managed_mss
+    yield sct
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 225, in process_screenshot
+    image = sct.grab(self.screenshot_boundaries)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/base.py", line 90, in grab
+    screenshot = self._grab_impl(monitor)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 427, in _grab_impl
+    ximage = self.xlib.XGetImage(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 229, in _validate
+    raise ScreenShotError(f"{func.__name__}() failed", details=details)
+mss.exception.ScreenShotError: XGetImage() failed
+2024-04-22 16:16:56,141 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:16:56,142 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:16:58,774 - ERROR - An error occurred with mss: XGetImage() failed
+Traceback (most recent call last):
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 208, in managed_mss
+    yield sct
+  File "/mnt/c/Users/group3/Documents/GitHub/Omg-machine-learning/Test/environment_omgml.py", line 225, in process_screenshot
+    image = sct.grab(self.screenshot_boundaries)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/base.py", line 90, in grab
+    screenshot = self._grab_impl(monitor)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 427, in _grab_impl
+    ximage = self.xlib.XGetImage(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/group3/anaconda3/envs/omgmlgpu/lib/python3.11/site-packages/mss/linux.py", line 229, in _validate
+    raise ScreenShotError(f"{func.__name__}() failed", details=details)
+mss.exception.ScreenShotError: XGetImage() failed
+2024-04-22 16:19:00,262 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:19:00,263 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
+2024-04-22 16:21:14,308 - DEBUG - CACHEDIR=/home/group3/.cache/matplotlib
+2024-04-22 16:21:14,308 - DEBUG - Using fontManager instance from /home/group3/.cache/matplotlib/fontlist-v330.json
