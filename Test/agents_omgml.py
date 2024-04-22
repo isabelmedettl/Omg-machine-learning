@@ -10,6 +10,7 @@ import environment_omgml
 from datetime import datetime
 import matplotlib.pyplot as plt
 from NoisyDense import NoisyDense
+import time
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -30,7 +31,7 @@ gamma = 0.97  # Discount factor for past rewards
 #)  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 60  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 1000  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():
@@ -57,17 +58,17 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 # The first model makes the predictions for Q-values which are used to
 # make an action.
 print(states)
-model = create_q_model()
+model = keras.models.load_model('model_from20240422_055434.keras')
 # Build a target model for the prediction of future rewards.
 # The weights of a target model get updated every 10000 steps thus when the
 # loss between the Q-values is calculated the target Q-value is stable.
-model_target = create_q_model()
+model_target = keras.models.load_model('model_from20240422_055434.keras')
 model.summary()
 
 
 # In the Deepmind paper they use RMSProp however then Adam optimizer
 # improves training time
-optimizer = keras.optimizers.Adam(learning_rate=0.0005, clipnorm=1.0)
+optimizer = keras.optimizers.Nadam(learning_rate=0.0005, clipnorm=1.0)
 
 # Experience replay buffers
 action_history = []
@@ -98,6 +99,8 @@ update_target_network = 100
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
 
+#pretime = 0
+
 while True:
     observation, _ = env.reset()
     state = np.array(observation)
@@ -110,6 +113,8 @@ while True:
         #frame_count += 1
         step_counter += 1
 
+        #print(time.time() - pretime)
+        #pretime = time.time()
 
         # Predict action Q-values
         # From environment state
@@ -214,7 +219,7 @@ while True:
     with summary_writer.as_default():
         tf.summary.scalar('Episode Reward', episode_reward, step=episode_count)
         tf.summary.scalar('Running Reward', running_reward, step=episode_count)
-        tf.summary.scalar('Loss', loss, step=episode_count)
+        #tf.summary.scalar('Loss', loss, step=episode_count)
         summary_writer.flush()
 
     '''if running_reward > running_reward_max:  # Condition to consider the task solved
