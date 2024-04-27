@@ -25,12 +25,12 @@ pdi.FAILSAFE = False
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Moa path: "C:\\dev\\moaskola\\Kandidat\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"
 # Splab22 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 120
+fps = 240
 
 register(
     id="Mojosabel-v0",
@@ -43,7 +43,7 @@ logging.basicConfig(level=logging.DEBUG, filename='application.log',
 class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
-        self.action_space = Discrete(18)
+        self.action_space = Discrete(10)  # This seems to never be used?
         self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
 
         # Initialize the state variables
@@ -348,8 +348,10 @@ class Environment(gymnasium.Env):
         if self.white_pixels > white_pixels_premove:
             reward += 20  # Reward for progress (minerals / crocodiles)
 
+        if self.white_pixels < white_pixels_premove:
+            self.white_pixels = 0  # Resets amount of white pixels when leveling up
+
         if self.black_pixels > 400:
-            reward -= 100  # Reward for death (punishment)
             print("Reward is -100 cus dead")
         elif self.black_pixels > black_pixels_premove:
             reward += 100  # Reward for level up
