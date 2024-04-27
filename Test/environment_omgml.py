@@ -30,7 +30,7 @@ game_path = "c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your ga
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 120
+fps = 240
 
 register(
     id="Mojosabel-v0",
@@ -43,12 +43,12 @@ logging.basicConfig(level=logging.DEBUG, filename='application.log',
 class Environment(gymnasium.Env):
     def __init__(self):
         super(Environment, self).__init__()
-        self.action_space = Discrete(18)
+        self.action_space = Discrete(10)
         self.observation_space = Box(low=0, high=1, shape=(44, 80, 3), dtype=np.float32)  # Stack frames later
 
         # Initialize the state variables
-        self.cached_distances_to_targets = []
-        self.distances_to_targets = []  # Is this necessary?
+        #self.cached_distances_to_targets = []
+        #self.distances_to_targets = []  # Is this necessary?
         self.locations = []
         self.pick_up_locations = []
         self.agent_location = (0, 0)
@@ -84,8 +84,8 @@ class Environment(gymnasium.Env):
 
         #print("took step", self.actions[action_index])
 
-        if len(self.distances_to_targets) > 0:
-            self.distances_to_targets.clear()
+        '''if len(self.distances_to_targets) > 0:
+            self.distances_to_targets.clear()'''
 
         white_pixels_premove = self.white_pixels
         black_pixels_premove = self.black_pixels
@@ -112,9 +112,9 @@ class Environment(gymnasium.Env):
 
         observation = self.update_locations()
 
-        for loc in self.pick_up_locations:
+        '''for loc in self.pick_up_locations:
             self.distances_to_targets.append(self.calculate_distance(loc, self.agent_location))
-        self.distances_to_targets.sort(reverse=True)
+        self.distances_to_targets.sort(reverse=True)'''
 
         reward = self.calculate_reward(white_pixels_premove, black_pixels_premove)
 
@@ -156,7 +156,7 @@ class Environment(gymnasium.Env):
         self.step_counter = 0
         self.white_pixels = 0
         self.black_pixels = 0
-        self.cached_distances_to_targets.clear()
+        #self.cached_distances_to_targets.clear()
 
        # os.startfile(game_path)
         # Start a new game process
@@ -256,7 +256,7 @@ class Environment(gymnasium.Env):
 
         # Convert back to NumPy array and save
         processed_image = np.array(image)
-        cv2.imwrite("screenshot00.png", processed_image)
+        # cv2.imwrite("screenshot00.png", processed_image)
 
         if self.locations is not None:
             if len(self.locations) > 0:
@@ -338,17 +338,20 @@ class Environment(gymnasium.Env):
 
         reward = 0
 
-        if len(self.cached_distances_to_targets) > 0:
+        '''if len(self.cached_distances_to_targets) > 0:
             for i in range(min(len(self.distances_to_targets), len(self.cached_distances_to_targets))):
                 if self.distances_to_targets[i] < self.cached_distances_to_targets[i]:
                     reward += (self.cached_distances_to_targets[i] - self.distances_to_targets[i]) / 5 # we are testing how much to divide
                     self.cached_distances_to_targets[i] = self.distances_to_targets[i]
         else:
             for i in range(len(self.distances_to_targets)):
-                self.cached_distances_to_targets.append(self.distances_to_targets[i])
+                self.cached_distances_to_targets.append(self.distances_to_targets[i])'''
 
         if self.white_pixels > white_pixels_premove:
             reward += 20  # Reward for progress (minerals / crocodiles)
+
+        if self.white_pixels < white_pixels_premove:
+            self.white_pixels = 0  # Resets white pixels when level increase
 
         if self.black_pixels > 400:
             reward -= 100  # Reward for death (punishment)
