@@ -22,7 +22,7 @@ num_actions = 10
 
 # Configuration parameters for the whole setup
 seed = 42
-gamma = 0.97  # Discount factor for past rewards
+gamma = 0.99  # Discount factor for past rewards
 #epsilon = 1.0  # Epsilon greedy parameter
 #epsilon_min = 0.1  # Minimum epsilon greedy parameter
 #epsilon_max = 1.0  # Maximum epsilon greedy parameter
@@ -31,7 +31,7 @@ gamma = 0.97  # Discount factor for past rewards
 #)  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 1000  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 500  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():
@@ -58,11 +58,11 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 # The first model makes the predictions for Q-values which are used to
 # make an action.
 print(states)
-model = keras.models.load_model('model_from20240422_055434.keras')
+model = create_q_model()
 # Build a target model for the prediction of future rewards.
 # The weights of a target model get updated every 10000 steps thus when the
 # loss between the Q-values is calculated the target Q-value is stable.
-model_target = keras.models.load_model('model_from20240422_055434.keras')
+model_target = create_q_model()
 model.summary()
 
 
@@ -89,7 +89,7 @@ step_counter = 0
 #epsilon_greedy_steps = max_steps_per_episode * max_episodes / 2
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 10000
+max_memory_length = 50000
 # Train the model after 4 actions
 ''' this could be wrong, check if statement in loop'''
 update_after_actions = 1
