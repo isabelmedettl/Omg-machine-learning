@@ -34,7 +34,7 @@ gamma = 0.97  # Discount factor for past rewards
 #)  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 60  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 900  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():
