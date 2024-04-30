@@ -10849,3 +10849,11 @@
 2024-04-17 22:43:04,272 - DEBUG - findfont: Matching sans\-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('C:\\Users\\isabe\\anaconda3\\envs\\omgmlwe\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\DejaVuSans.ttf') with score of 0.050000.
 2024-04-30 04:05:08,352 - DEBUG - CACHEDIR=C:\Users\Carl Montgomerie\.matplotlib
 2024-04-30 04:05:08,357 - DEBUG - Using fontManager instance from C:\Users\Carl Montgomerie\.matplotlib\fontlist-v330.json
+2024-04-30 04:06:45,411 - DEBUG - CACHEDIR=C:\Users\Carl Montgomerie\.matplotlib
+2024-04-30 04:06:45,412 - DEBUG - Using fontManager instance from C:\Users\Carl Montgomerie\.matplotlib\fontlist-v330.json
+2024-04-30 09:31:12,865 - DEBUG - CACHEDIR=C:\Users\Carl Montgomerie\.matplotlib
+2024-04-30 09:31:12,870 - DEBUG - Using fontManager instance from C:\Users\Carl Montgomerie\.matplotlib\fontlist-v330.json
+2024-04-30 10:12:01,094 - DEBUG - CACHEDIR=C:\Users\Carl Montgomerie\.matplotlib
+2024-04-30 10:12:01,095 - DEBUG - Using fontManager instance from C:\Users\Carl Montgomerie\.matplotlib\fontlist-v330.json
+2024-04-30 10:12:30,946 - DEBUG - CACHEDIR=C:\Users\Carl Montgomerie\.matplotlib
+2024-04-30 10:12:30,947 - DEBUG - Using fontManager instance from C:\Users\Carl Montgomerie\.matplotlib\fontlist-v330.json

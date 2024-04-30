@@ -27,7 +27,7 @@ pdi.FAILSAFE = False
 # Splab-17 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Snake monty: C:\\Python\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe
 # Snakesabel: C:\\Users\\isabe\\Omgml\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe
-game_path = "C:\\Users\\isabe\\Omgml\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\Test\\dist\\snake.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
