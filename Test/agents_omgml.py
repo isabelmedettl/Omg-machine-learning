@@ -9,7 +9,7 @@ import tensorflow as tf
 import environment_omgml
 from datetime import datetime
 import matplotlib.pyplot as plt
-# from NoisyDense import NoisyDense
+from NoisyDense import NoisyDense
 
 env = environment_omgml.Environment()
 #env = FrameStack(env, 3)
@@ -22,15 +22,15 @@ num_actions = 4
 # Configuration parameters for the whole setup
 seed = 42
 gamma = 0.97  # Discount factor for past rewards
-epsilon = 1.0  # Epsilon greedy parameter
-epsilon_min = 0.1  # Minimum epsilon greedy parameter
-epsilon_max = 1.0  # Maximum epsilon greedy parameter
-epsilon_interval = (
-    epsilon_max - epsilon_min
-)  # Rate at which to reduce chance of random action being taken
+#epsilon = 1.0  # Epsilon greedy parameter
+#epsilon_min = 0.1  # Minimum epsilon greedy parameter
+#epsilon_max = 1.0  # Maximum epsilon greedy parameter
+#epsilon_interval = (
+#    epsilon_max - epsilon_min
+#)  # Rate at which to reduce chance of random action being taken
 batch_size = 128  # Size of batch taken from replay buffer
 max_steps_per_episode = 1000
-max_episodes = 100  # Limit training episodes, will run until solved if smaller than 1
+max_episodes = 500  # Limit training episodes, will run until solved if smaller than 1
 
 
 def create_q_model():
@@ -42,8 +42,8 @@ def create_q_model():
             layers.Conv2D(64, 4, strides=2, activation="relu"),
             layers.Conv2D(64, 3, strides=1, activation="relu"),
             layers.Flatten(),
-            layers.Dense(512, activation="relu"),
-            layers.Dense(num_actions, activation="linear"),
+            NoisyDense(512, activation="relu"),
+            NoisyDense(num_actions, activation="linear"),
         ]
     )
 
@@ -88,7 +88,7 @@ epsilon_random_steps = max_steps_per_episode * 5
 epsilon_greedy_steps = max_steps_per_episode * max_episodes / 2
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 10000
+max_memory_length = 25000
 # Train the model after 4 actions
 ''' this could be wrong, check if statement in loop'''
 update_after_actions = 1
@@ -111,24 +111,16 @@ while True:
         step_counter += 1
 
         # Use epsilon-greedy for exploration
-        if step_counter < epsilon_random_steps or epsilon > np.random.rand(1)[0]:
-            # Take random action
-            action = np.random.choice(num_actions)
-        else:
-            # Predict action Q-values
-            # From environment state
-            state_tensor = keras.ops.convert_to_tensor(state)
-            state_tensor = keras.ops.expand_dims(state_tensor, 0) #adding another dimension to the tensor
-            action_probabilities = model(state_tensor, training=False)
-            # Take best action
-            action = keras.ops.argmax(action_probabilities[0]).numpy()
 
-        # Decay probability of taking random action
-        if epsilon_random_steps > 0:
-            epsilon_random_steps -= 1
-        else:
-            epsilon -= (epsilon_interval / epsilon_greedy_steps)
-        epsilon = max(epsilon, epsilon_min)
+        # Predict action Q-values
+        # From environment state
+        state_tensor = keras.ops.convert_to_tensor(state)
+        state_tensor = keras.ops.expand_dims(state_tensor, 0) #adding another dimension to the tensor
+        action_probabilities = model(state_tensor, training=False)
+        # Take best action
+        action = keras.ops.argmax(action_probabilities[0]).numpy()
+
+
 
         # Apply the sampled action in our environment
         state_next, reward, done, _, _ = env.step(action)
@@ -138,7 +130,6 @@ while True:
         print("Episode reward: ", int(episode_reward))
         print("Episode count: ", episode_count, " of ", max_episodes)
         print("Steps: ", step_counter, " of ", max_steps_per_episode)
-        print("Epsilon: ", epsilon)
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -225,7 +216,6 @@ while True:
         tf.summary.scalar('Episode Reward', episode_reward, step=episode_count)
         tf.summary.scalar('Running Reward', running_reward, step=episode_count)
         tf.summary.scalar('Loss', loss, step=episode_count)
-        tf.summary.scalar('Epsilon', epsilon, step=episode_count)
         summary_writer.flush()
 
     '''if running_reward > running_reward_max:  # Condition to consider the task solved

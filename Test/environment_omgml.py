@@ -349,10 +349,10 @@ class Environment(gymnasium.Env):
                 self.cached_distances_to_targets.append(self.distances_to_targets[i])
 
         if self.red_pixels > red_pixels_premove:
-            reward += 10  # Reward for progress (minerals / crocodiles)
+            reward += 1  # Reward for progress (minerals / crocodiles)
 
         if self.dead and not self.punished:
-            reward -= 2  # Reward for death (punishment)
+            reward -= 0.2  # Reward for death (punishment)
             print('Dieded')
             self.punished = True
 
