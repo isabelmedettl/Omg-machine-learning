@@ -30,7 +30,7 @@ game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\deb
 # Name of game window
 window_title = "Mojosabel"
 
-fps = 240
+fps = 60
 
 register(
     id="Mojosabel-v0",
