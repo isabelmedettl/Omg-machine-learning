@@ -25,7 +25,7 @@ pdi.FAILSAFE = False
 # Monty path: C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
 # Moa path: "C:\\dev\\moaskola\\Kandidat\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"
 # Splab22 path: C:\\Users\\group4\\Documents\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe
-game_path = "c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
+game_path = "C:\\Python\\GitHub\\Omg-machine-learning\\c++_mojosabel\\build\\debug\\play.exe"  # Replace this with your game path
 
 # Name of game window
 window_title = "Mojosabel"
